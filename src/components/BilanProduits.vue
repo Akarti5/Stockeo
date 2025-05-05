@@ -1,88 +1,139 @@
 <template>
     <h1>Bilan des Produits</h1>
   
-    <div v-if="bilan">
-      <p>Montant Minimal: {{ bilan.montantMinimal ? bilan.montantMinimal.toFixed(2) : 'N/A' }}</p>
-      <p>Montant Maximal: {{ bilan.montantMaximal ? bilan.montantMaximal.toFixed(2) : 'N/A' }}</p>
-      <p>Montant Total: {{ bilan.totalMontant ? bilan.totalMontant.toFixed(2) : 'N/A' }}</p>
-  
-      <div style="width:400px; margin: 20px auto;">
-        <canvas id="bilan-chart"></canvas>
-      </div>
+<div class="parent">
+
+    
+    <div class="div1">
+     <div class="title">
+        Total des Produits
+     </div>
+     <div class="value">
+      {{ totalProduits }} 
     </div>
-    <p v-else>Chargement du bilan...</p>
+    </div>
+
+    <div class="div2">
+     <div class="title">
+        Total des Montants
+     </div>
+     <div class="value">
+      {{ totalMontant }} &euro;
+    </div>
+    </div>
+
+    <div class="div3">
+     <div class="title">
+        Montant maximum
+     </div>
+     <div class="value">
+      {{ montantMaximal }} &euro;
+    </div>
+    </div>
+
+    <div class="div4">
+     <div class="title">
+        Montant minimum 
+     </div>
+     <div class="value">
+      {{ montantMinimal }} &euro;
+    </div>
+    </div>
+
+    <div class="div5">
+  
+    </div>
+
+</div>
+    
   </template>
   
   <script setup>
   import { ref, onMounted } from 'vue';
-  import { Chart, BarController, PieController, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
+  import axios from 'axios';
   
-  Chart.register(BarController, PieController, CategoryScale, LinearScale, Title, Tooltip, Legend);
+  const totalProduits = ref(0);
+  const totalMontant = ref(0);
+  const montantMaximal = ref(0);
+  const montantMinimal = ref(0);
   
-  const bilan = ref(null);
-  const chartInstance = ref(null);
-  
-  const fetchBilan = async () => {
-    try {
-      const response = await fetch('http://localhost/backend/bilan_produits.php');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      bilan.value = data;
-      updateChart();
-    } catch (error) {
-      console.error('Erreur lors de la récupération du bilan:', error);
-    }
-  };
-  
-  const updateChart = () => {
-    if (bilan.value) {
-      const ctx = document.getElementById('bilan-chart');
-  
-      if (chartInstance.value) {
-        chartInstance.value.destroy(); // Détruire l'ancienne instance si elle existe
-      }
-  
-      chartInstance.value = new Chart(ctx, {
-        type: 'bar', // Vous pouvez changer 'bar' en 'pie' pour un camembert
-        data: {
-          labels: ['Minimal', 'Maximal', 'Total'],
-          datasets: [{
-            label: 'Montant (MAD)', // Adaptez la devise si nécessaire
-            data: [bilan.value.montantMinimal, bilan.value.montantMaximal, bilan.value.totalMontant],
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)',
-              'rgba(54, 162, 235, 0.2)',
-              'rgba(255, 206, 86, 0.2)',
-            ],
-            borderColor: [
-              'rgba(255, 99, 132, 1)',
-              'rgba(54, 162, 235, 1)',
-              'rgba(255, 206, 86, 1)',
-            ],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: 'Bilan des Montants des Produits'
-            },
-            legend: {
-              display: false
-            }
+  const fetchTotalProduits = async () => {
+      try {
+          const response = await axios.get('http://localhost/backend/bilan_produits.php');
+          if (response.data && response.data !== undefined) {
+              totalProduits.value = response.data.totalProduits; // Ensure the backend sends `totalProduits`
+              totalMontant.value = response.data.totalMontant; // Ensure the backend sends `totalMontant`
+              montantMaximal.value = response.data.montantMaximal; // Ensure the backend sends `montantMaximal`
+              montantMinimal.value = response.data.montantMinimal; // Ensure the backend sends `montantMinimal`
+          } else {
+              console.error('Unexpected API response:', response.data);
           }
-        }
-      });
-    }
+      } catch (error) {
+          console.error('Erreur lors de la récupération des produits:', error);
+      }
   };
   
-  onMounted(fetchBilan);
+  onMounted(() => {
+      fetchTotalProduits();
+  });
   </script>
+<style>
+.parent {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 120px auto;
+    gap: 20px;
+    background-color: #F1F5F9;
+    margin-top: 22px;
+}
+.title{
+    font-size: 20px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+}
+
+.value{
+    font-size: 30px;
+    font-weight: bold;
+    color:rgb(55, 198, 255);
+    text-align: center;
+}
+    
+
+
+
+.div5 {
+    height: 595px;
+    background-color: purple;
+    grid-column: span 4 / span 4;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+.div1,
+.div2,
+.div3,
+.div4{
+    background-color: #FFF;
+  
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+
+.div1:hover,
+.div2:hover,
+.div3:hover,
+.div4:hover{
+   
+  transform: translateY(-5px); 
+  cursor: pointer; /* Indiquer que l'élément est interactif */
+    
+}
+
+        </style>

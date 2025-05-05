@@ -93,7 +93,7 @@ import { RouterLink, RouterView } from 'vue-router';
 /* Main content */
 .main-content {
   flex: 1;
-  background-color: white;
+  background-color: #F1F5F9;;
   color: #333;
   padding: 2rem;
   border-radius: 0;
