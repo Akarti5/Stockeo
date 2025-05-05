@@ -1,8 +1,4 @@
 <?php
-error_log("Total Montant: " . $totalMontant);
-error_log("Montant Minimal: " . $montantMinimal);
-error_log("Montant Maximal: " . $montantMaximal);
-error_log("Total produits: " . $totalProduits);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // Allow all origins (restrict in production)
 
@@ -10,27 +6,43 @@ require 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
-        // Calculate the total number of products
-        $stmtCount = $pdo->query("SELECT COUNT(*) AS totalProduits FROM Produit");
-        $totalProduits = $stmtCount->fetch(PDO::FETCH_ASSOC)['totalProduits'] ?? 0;
-
-        // Calculate the total amount
-        $stmtTotal = $pdo->query("SELECT SUM(COALESCE(prix, 0) * COALESCE(quantite, 0)) AS totalMontant FROM Produit;");
-        $totalMontant = $stmtTotal->fetch(PDO::FETCH_ASSOC)['totalMontant'] ?? 0;
-
-        // Find the minimum amount
-        $stmtMin = $pdo->query("SELECT MIN(prix * quantite) AS montantMinimal FROM Produit");
-        $montantMinimal = $stmtMin->fetch(PDO::FETCH_ASSOC)['montantMinimal'] ?? 0;
-
-        // Find the maximum amount
-        $stmtMax = $pdo->query("SELECT MAX(prix * quantite) AS montantMaximal FROM Produit");
-        $montantMaximal = $stmtMax->fetch(PDO::FETCH_ASSOC)['montantMaximal'] ?? 0;
-
+        // Calculate the total number of products using fetchColumn()
+        $stmtCount = $pdo->query("SELECT COUNT(*) FROM Produit");
+        $totalProduits = $stmtCount->fetchColumn();
+        
+        // Fallback if above method fails
+        if ($totalProduits === false) {
+            $stmt = $pdo->query("SELECT numproduit FROM Produit");
+            $allProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $totalProduits = count($allProducts);
+        }
+        
+        // Fetch all products first
+        $stmt = $pdo->query("SELECT numproduit, design, prix, quantite FROM Produit");
+        $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate totals using PHP instead of SQL
+        $totalMontant = 0;
+        $montants = [];
+        
+        foreach ($produits as $produit) {
+            $prix = floatval($produit['prix'] ?? 0);
+            $quantite = intval($produit['quantite'] ?? 0);
+            $montant = $prix * $quantite;
+            $totalMontant += $montant;
+            $montants[] = $montant;
+        }
+        
+        // Find min and max
+        $montantMinimal = !empty($montants) ? min($montants) : 0;
+        $montantMaximal = !empty($montants) ? max($montants) : 0;
+        
+        // Return the results as JSON
         echo json_encode([
-            'totalProduits' => $totalProduits,
-            'totalMontant' => $totalMontant,
-            'montantMinimal' => $montantMinimal,
-            'montantMaximal' => $montantMaximal
+            'totalProduits' => (int) $totalProduits,
+            'totalMontant' => (float) $totalMontant,
+            'montantMinimal' => (float) $montantMinimal,
+            'montantMaximal' => (float) $montantMaximal
         ]);
     } catch (PDOException $e) {
         echo json_encode(['message' => 'Erreur lors du calcul du bilan', 'error' => $e->getMessage()]);
