@@ -82,13 +82,13 @@ box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 
 /* Style des titres */
 h1 {
-text-align: center;
-font-size: 2.2rem;
-color:mediumblue;
-margin-bottom: 40px;
-font-family: 'Poppins', sans-serif;
-letter-spacing: 1px;
-position: relative;
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1a3c5e;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* Ligne décorative sous le titre */
