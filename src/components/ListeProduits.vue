@@ -245,7 +245,7 @@ th, td {
 }
 
 th {
-  background-color: #35a0d2;
+  background-color: #8BB5D6 ;
   color: #ffffff;
   font-weight: 600;
   text-transform: uppercase;
@@ -276,24 +276,24 @@ tbody tr:hover {
 }
 
 .btn-modifier {
-  background-color: rgb(65, 218, 78);
+  background-color: #60A5FA ;
   color: #ffffff;
   margin-right: 10px;
 }
 
 .btn-modifier:hover {
-  background-color: green;
+  background-color: #3B82F6;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
 }
 
 .btn-supprimer {
-  background-color: #ff4d4f;
+  background-color: #FB7185 ;
   color: #ffffff;
 }
 
 .btn-supprimer:hover {
-  background-color: #d93638;
+  background-color: #F43F5E;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);
 }
@@ -333,7 +333,7 @@ p {
   max-width: 600px;
   width: 100%;
   padding: 40px;
-  background:#aedff7;
+  background:#FAFAFA;
   border: 1px solid #e0e0e0;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);

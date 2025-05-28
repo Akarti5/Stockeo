@@ -47,7 +47,7 @@ import { RouterLink, RouterView } from 'vue-router';
 
 /* Header styles */
 .header {
-  background-color: #35a0d2;
+  background-color: #8BB5D6 ;
   color: white;
   padding: 1rem 2rem;
   border-radius: 0;
@@ -57,7 +57,7 @@ import { RouterLink, RouterView } from 'vue-router';
 .app-title {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-left: 440px;
+  margin-left: 0vw;
 }
 
 /* Navigation styles */
@@ -81,19 +81,19 @@ import { RouterLink, RouterView } from 'vue-router';
 }
 
 .nav-link-active {
-  background-color: #35a0d2;
+  background-color: #8BB5D6 ;
   color: white;
   font-weight: bold;
 }
 
 .nav-link:hover:not(.nav-link-active) {
-  background-color: rgba(63, 81, 181, 0.1);
+  background-color: #8BB5D6 ;
 }
 
 /* Main content */
 .main-content {
   flex: 1;
-  background-color: rgb(209, 219, 219);
+  background-color: #FAFAFA;
   color: #333;
   padding: 2rem;
   border-radius: 0;
