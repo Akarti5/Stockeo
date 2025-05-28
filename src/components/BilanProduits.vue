@@ -249,6 +249,7 @@ canvas {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  margin-top: 25px;
 }
 
 .div1:hover,
@@ -257,5 +258,14 @@ canvas {
 .div4:hover{
   transform: translateY(-5px); 
   cursor: pointer; /* Indiquer que l'élément est interactif */
+}
+h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1a3c5e;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 </style>
