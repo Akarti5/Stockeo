@@ -1,5 +1,6 @@
 <template>
   <h1>Liste et Mise à Jour des Produits</h1>
+  <input type="text" v-model="searchQuery" placeholder="Rechercher un produit..." @input="fetchProduits" class="search-input" />
 
   <div v-if="message" :class="{'success': isSuccess, 'error': !isSuccess}">
     {{ message }}
