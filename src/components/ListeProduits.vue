@@ -6,7 +6,7 @@
     <input 
       type="text" 
       v-model="searchQuery" 
-      placeholder="Rechercher un produit par numéro ou désignation..." 
+      placeholder="Rechercher un produit par désignation..." 
       class="search-input"
       @keyup.enter="rechercherProduits"
     />
