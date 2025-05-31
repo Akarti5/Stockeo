@@ -17,26 +17,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $totalProduits = count($allProducts);
         }
         
-        // Fetch all products with their details
+        // Fetch all products first
         $stmt = $pdo->query("SELECT numproduit, design, prix, quantite FROM Produit");
         $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Calculate totals and prepare product data for frontend
+        // Calculate totals using PHP instead of SQL
         $totalMontant = 0;
         $montants = [];
-        $produitsData = [];
+        $produitsAvecMontant = []; // Nouveau tableau pour les produits avec montant calculé
         
         foreach ($produits as $produit) {
             $prix = floatval($produit['prix'] ?? 0);
             $quantite = intval($produit['quantite'] ?? 0);
             $montant = $prix * $quantite;
-            
-            // Add montant to the total
             $totalMontant += $montant;
             $montants[] = $montant;
             
-            // Add product data for the frontend chart
-            $produitsData[] = [
+            // Ajouter le produit avec son montant calculé
+            $produitsAvecMontant[] = [
                 'numproduit' => $produit['numproduit'],
                 'design' => $produit['design'],
                 'prix' => $prix,
@@ -49,19 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $montantMinimal = !empty($montants) ? min($montants) : 0;
         $montantMaximal = !empty($montants) ? max($montants) : 0;
         
-        // Return the results as JSON
+        // Return the results as JSON with products data
         echo json_encode([
             'totalProduits' => (int) $totalProduits,
             'totalMontant' => (float) $totalMontant,
             'montantMinimal' => (float) $montantMinimal,
             'montantMaximal' => (float) $montantMaximal,
-            'produits' => $produitsData
+            'produits' => $produitsAvecMontant // Ajouter les données des produits
         ]);
     } catch (PDOException $e) {
-        echo json_encode([
-            'message' => 'Erreur lors du calcul du bilan', 
-            'error' => $e->getMessage()
-        ]);
+        echo json_encode(['message' => 'Erreur lors du calcul du bilan', 'error' => $e->getMessage()]);
     }
 } else {
     echo json_encode(['message' => 'Méthode non autorisée']);

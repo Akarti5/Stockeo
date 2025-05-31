@@ -2,7 +2,7 @@
 $host = 'localhost';       // Adresse de votre serveur PostgreSQL (e.g., localhost)
 $dbname = 'gsp_database'; // Nom de la base de données
 $user = 'postgres';    // Nom d'utilisateur PostgreSQL
-$password = 'votre mot de passe Postgres'; // Mot de passe PostgreSQL
+$password = 'postgres'; // Mot de passe PostgreSQL
 
 try {
     $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
