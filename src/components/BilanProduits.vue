@@ -66,10 +66,7 @@
         <div v-else class="chart-container">
           <canvas ref="chartCanvas" id="produitsChart"></canvas>
         </div>
-        
-        <button @click="showDebug = !showDebug" class="btn-debug">
-          {{ showDebug ? 'Masquer' : 'Afficher' }} Debug
-        </button>
+      
       </div>
     </div>
   </div>
