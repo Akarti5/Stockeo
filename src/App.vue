@@ -3,9 +3,7 @@
     <!-- Header -->
     <header class="header">
       <h1 class="app-title">
-        <span class="letter" v-for="(letter, index) in titleLetters" :key="index" :style="{ animationDelay: index * 0.1 + 's' }">
-          {{ letter }}
-        </span>
+        
       </h1>
       <div class="floating-particles">
         <div class="particle" v-for="n in 15" :key="n"></div>
@@ -39,12 +37,6 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import { ref, computed } from 'vue';
-
-const title = "Gestion des Produits";
-const titleLetters = computed(() => {
-  return title.split('').map(char => char === ' ' ? '\u00A0' : char);
-});
 </script>
 
 <style scoped>

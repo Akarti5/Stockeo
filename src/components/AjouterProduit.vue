@@ -1,24 +1,48 @@
 <template>
-  <h1>Ajouter un Produit</h1>
+  <div>
+    <h1>Ajouter un Produit</h1>
 
-  <form @submit.prevent="ajouterNouveauProduit">
-    <div>
-      <label for="design">Désignation:</label>
-      <input type="text" id="design" v-model="nouveauProduit.design" required>
-    </div>
-    <div>
-      <label for="prix">Prix:</label>
-      <input type="number" id="prix" v-model="nouveauProduit.prix" step="0.01" required>
-    </div>
-    <div>
-      <label for="quantite">Quantité:</label>
-      <input type="number" id="quantite" v-model="nouveauProduit.quantite" required>
-    </div>
-    <button type="submit">Ajouter le Produit</button>
-  </form>
+    <form @submit.prevent="ajouterNouveauProduit">
+      <div>
+        <label for="design">Désignation:</label>
+        <input type="text" id="design" v-model="nouveauProduit.design" required>
+      </div>
+      <div>
+        <label for="prix">Prix:</label>
+        <input type="number" id="prix" v-model="nouveauProduit.prix" step="0.01" required>
+      </div>
+      <div>
+        <label for="quantite">Quantité:</label>
+        <input type="number" id="quantite" v-model="nouveauProduit.quantite" required>
+      </div>
+      <button type="submit">Ajouter le Produit</button>
+    </form>
 
-  <div v-if="message" :class="{'success': isSuccess, 'error': !isSuccess}">
-    {{ message }}
+
+
+    <!-- Success/Error Modal -->
+    <div v-if="showResultModal" class="modal-overlay" @click="closeResultModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-icon">
+          <div class="icon-circle" :class="isSuccess ? 'success' : 'error'">
+            <i class="icon-result" :class="isSuccess ? 'icon-check' : 'icon-x'">
+              {{ isSuccess ? '✓' : '✕' }}
+            </i>
+          </div>
+        </div>
+        <h3 class="modal-title">{{ isSuccess ? 'Succès!' : 'Erreur!' }}</h3>
+        <p class="modal-text">{{ message }}</p>
+        <div class="modal-buttons">
+          <button class="btn-ok" @click="closeResultModal">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <p>Ajout en cours...</p>
+    </div>
   </div>
 </template>
 
@@ -26,58 +50,69 @@
 import { ref } from 'vue';
 
 const nouveauProduit = ref({
-design: '',
-prix: null,
-quantite: null,
+  design: '',
+  prix: null,
+  quantite: null,
 });
 
 const message = ref('');
 const isSuccess = ref(false);
+const showResultModal = ref(false);
+const isLoading = ref(false);
+
+const closeResultModal = () => {
+  showResultModal.value = false;
+};
 
 const ajouterNouveauProduit = async () => {
-try {
-  const response = await fetch('http://localhost/backend/ajouter_produit.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(nouveauProduit.value),
-  });
+  isLoading.value = true;
+  
+  try {
+    const response = await fetch('http://localhost/backend/ajouter_produit.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(nouveauProduit.value),
+    });
 
-  const data = await response.json();
-  message.value = data.message;
-  isSuccess.value = response.ok;
+    const data = await response.json();
+    message.value = data.message;
+    isSuccess.value = response.ok;
 
-  // Réinitialiser le formulaire en cas de succès
-  if (response.ok) {
-    nouveauProduit.value = { design: '', prix: null, quantite: null };
+    // Réinitialiser le formulaire en cas de succès
+    if (response.ok) {
+      nouveauProduit.value = { design: '', prix: null, quantite: null };
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du produit:', error);
+    message.value = 'Erreur de connexion au serveur.';
+    isSuccess.value = false;
+  } finally {
+    isLoading.value = false;
+    showResultModal.value = true;
   }
-} catch (error) {
-  console.error('Erreur lors de l\'ajout du produit:', error);
-  message.value = 'Erreur de connexion au serveur.';
-  isSuccess.value = false;
-}
 };
 </script>
 
 <style scoped>
 /* Conteneur global */
 form {
-max-width: 550px;
-margin: 50px auto;
-padding: 35px;
-background: transparent; 
-border-radius: 15px;
-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-transition: transform 0.3s ease, box-shadow 0.3s ease;
-position: relative;
-overflow: hidden;
+  max-width: 550px;
+  margin: 50px auto;
+  padding: 35px;
+  background: transparent; 
+  border-radius: 15px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Animation au survol du formulaire */
 form:hover {
-transform: translateY(-5px);
-box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
 
 /* Style des titres */
@@ -93,180 +128,322 @@ h1 {
 
 /* Ligne décorative sous le titre */
 h1::after {
-content: '';
-display: block;
-width: 80px;
-height: 3px;
-background: linear-gradient(90deg, #007bff, #00c4b4);
-margin: 10px auto;
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #007bff, #00c4b4);
+  margin: 10px auto;
 }
 
 /* Style des groupes d'input */
 div {
-margin-bottom: 25px;
-position: relative;
+  margin-bottom: 25px;
+  position: relative;
 }
-
 
 label {
-display: block;
-margin-bottom: 10px;
-font-weight: 600;
-color: #043e7b;
-font-size: 1.15rem;
-transition: color 0.3s ease;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #043e7b;
+  font-size: 1.15rem;
+  transition: color 0.3s ease;
 }
-
 
 input[type="text"],
 input[type="number"] {
-width: 100%;
-padding: 12px 12px 12px 40px;
-border: 2px solid #e2e8f0;
-border-radius: 10px;
-font-size: 1rem;
-background-color: #f9fafb;
-transition: all 0.3s ease;
-box-sizing: border-box;
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #f9fafb;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
-
 
 input[type="text"]:focus,
 input[type="number"]:focus {
-outline: none;
-border-color: #00c4b4;
-background-color: #fff;
-box-shadow: 0 0 10px rgba(0, 196, 180, 0.3);
+  outline: none;
+  border-color: #00c4b4;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 196, 180, 0.3);
 }
-
-
-div:nth-child(1) input::before {
-content: '📝';
-position: absolute;
-left: 12px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 1.2rem;
-}
-
-div:nth-child(2) input::before {
-content: '💰';
-position: absolute;
-left: 12px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 1.2rem;
-}
-
-div:nth-child(3) input::before {
-content: '🔢';
-position: absolute;
-left: 12px;
-top: 50%;
-transform: translateY(-50%);
-font-size: 1.2rem;
-}
-
 
 button[type="submit"] {
-width: 100%;
-background: linear-gradient(135deg, #007bff, #00c4b4);
-color: white;
-padding: 14px;
-border: none;
-border-radius: 10px;
-cursor: pointer;
-font-size: 1.2rem;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 1px;
-transition: all 0.3s ease;
-position: relative;
-overflow: hidden;
+  width: 100%;
+  background: linear-gradient(135deg, #007bff, #00c4b4);
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-
 button[type="submit"]::after {
-content: '';
-position: absolute;
-top: 50%;
-left: 50%;
-width: 0;
-height: 0;
-background: rgba(255, 255, 255, 0.3);
-border-radius: 50%;
-transform: translate(-50%, -50%);
-transition: width 0.6s ease, height 0.6s ease;
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
 }
 
 button[type="submit"]:hover::after {
-width: 300px;
-height: 300px;
+  width: 300px;
+  height: 300px;
 }
 
 button[type="submit"]:hover {
-background: linear-gradient(135deg, #0056b3, #009b93);
-transform: translateY(-3px);
+  background: linear-gradient(135deg, #0056b3, #009b93);
+  transform: translateY(-3px);
 }
 
 button[type="submit"]:active {
-transform: translateY(0);
-}
-
-
-.success {
-margin-top: 25px;
-padding: 12px;
-background-color: #d1fae5;
-color: #065f46;
-border-radius: 10px;
-text-align: center;
-font-weight: 500;
-animation: fadeIn 0.5s ease;
-}
-
-.error {
-margin-top: 25px;
-padding: 12px;
-background-color: #fee2e2;
-color: #991b1b;
-border-radius: 10px;
-text-align: center;
-font-weight: 500;
-animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-to {
-  opacity: 1;
   transform: translateY(0);
 }
+
+/* Custom SweetAlert Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
-
-@media (max-width: 600px) {
-form {
-  margin: 20px;
-  padding: 25px;
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+  position: relative;
 }
 
-h1 {
-  font-size: 1.9rem;
+.modal-icon {
+  margin-bottom: 25px;
 }
 
-button[type="submit"] {
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 4px solid #f39c12;
+  background-color: #fff3cd;
+  animation: pulse 1s infinite;
+}
+
+.icon-circle.success {
+  border-color: #28a745;
+  background-color: #d1e7dd;
+}
+
+.icon-circle.error {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.icon-question {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #f39c12;
+}
+
+.icon-result {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.icon-check {
+  color: #28a745;
+}
+
+.icon-x {
+  color: #dc3545;
+}
+
+.modal-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.modal-text {
   font-size: 1.1rem;
-  padding: 12px;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.5;
 }
 
-input[type="text"],
-input[type="number"] {
-  padding: 10px 10px 10px 35px;
-  font-size: 0.95rem;
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
 }
+
+.btn-cancel, .btn-confirm, .btn-ok {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: linear-gradient(135deg, #218838, #1ea688);
+  transform: translateY(-2px);
+}
+
+.btn-ok {
+  background: linear-gradient(135deg, #007bff, #00c4b4);
+  color: white;
+}
+
+.btn-ok:hover {
+  background: linear-gradient(135deg, #0056b3, #009b93);
+  transform: translateY(-2px);
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #00c4b4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  form {
+    margin: 20px;
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  button[type="submit"] {
+    font-size: 1.1rem;
+    padding: 12px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    padding: 10px 10px 10px 35px;
+    font-size: 0.95rem;
+  }
+
+  .modal-content {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .btn-cancel, .btn-confirm, .btn-ok {
+    width: 100%;
+  }
 }
 </style>
