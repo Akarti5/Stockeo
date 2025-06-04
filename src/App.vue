@@ -3,11 +3,8 @@
     <!-- Header -->
     <header class="header">
       <h1 class="app-title">
-        
+        <img src="../src/assets/logofinal.png" alt="Logo" class="logo" />
       </h1>
-      <div class="floating-particles">
-        <div class="particle" v-for="n in 15" :key="n"></div>
-      </div>
     </header>
 
     <!-- Navigation Menu -->
@@ -30,7 +27,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <p>© {{ new Date().getFullYear() }} Gestion des Produits</p>
+      <p>© {{ new Date().getFullYear() }} Stockeo-Gestion des stocks des Produits</p>
     </footer>
   </div>
 </template>
@@ -61,6 +58,9 @@ import { RouterLink, RouterView } from 'vue-router';
   width: 100%;
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center;   
 }
 
 .header::before {
@@ -70,11 +70,7 @@ import { RouterLink, RouterView } from 'vue-router';
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-  animation: backgroundMove 10s ease infinite;
+  background: #FAFAFA;
 }
 
 .app-title {
@@ -85,6 +81,11 @@ import { RouterLink, RouterView } from 'vue-router';
   z-index: 2;
   display: inline-block;
   perspective: 1000px;
+}
+.logo {
+  height: 100%;      /* Fit image height to 2cm */
+  width: auto;       /* Keep aspect ratio */
+  max-height: 2cm;   /* Ensure it never exceeds 2cm */
 }
 
 .letter {
