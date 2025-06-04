@@ -11,13 +11,11 @@
       @keyup.enter="rechercherProduits"
     />
     <button @click="rechercherProduits" class="btn-rechercher">
-      Rechercher
+      <i class="fa fa-search" aria-hidden="true"></i>
     </button>
-    <button @click="reinitialiserRecherche" class="btn-reinitialiser">
-      Tout afficher
-    </button>
+    
     <button @click="rafraichirListe" class="btn-rafraichir">
-      Rafraîchir
+      <i class="fas fa-sync-alt fa-spin"></i>
     </button>
   </div>
 
@@ -54,8 +52,12 @@
         <td>{{ produit.quantite }}</td>
         <td>{{ produit.montant }}€</td>
         <td>
-          <button class="btn-modifier" @click="modifierProduit(produit)">Modifier</button>
-          <button class="btn-supprimer" @click="supprimerProduit(produit.numproduit)">Supprimer</button>
+          <button class="btn-modifier" @click="modifierProduit(produit)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </button>
+          <button class="btn-supprimer" @click="supprimerProduit(produit.numproduit)">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+          </button>
         </td>
       </tr>
     </tbody>
@@ -96,6 +98,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import Swal from 'sweetalert2';
 
 const message = ref('');
 const isSuccess = ref(false);
@@ -124,41 +127,30 @@ const rafraichirListe = async () => {
     console.log('Liste rafraîchie:', data);
     produits.value = data;
     
-    // Afficher un message de confirmation
-    message.value = `Liste rafraîchie - ${data.length} produit(s) affiché(s)`;
-    isSuccess.value = true;
+    // Afficher un message de confirmation avec SweetAlert2
+    await Swal.fire({
+      icon: 'success',
+      title: 'Liste rafraîchie!',
+      text: `${data.length} produit(s) affiché(s)`,
+      timer: 2000,
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end'
+    });
     
     // Reset to first page
     currentPage.value = 1;
     
-    // Effacer le message après 3 secondes
-    setTimeout(() => {
-      message.value = '';
-    }, 3000);
-    
   } catch (error) {
     console.error('Erreur lors du rafraîchissement:', error);
-    message.value = 'Erreur lors du rafraîchissement de la liste.';
-    isSuccess.value = false;
+    await Swal.fire({
+      icon: 'error',
+      title: 'Erreur!',
+      text: 'Erreur lors du rafraîchissement de la liste.',
+      confirmButtonColor: '#d33'
+    });
   } finally {
     isLoading.value = false;
-  }
-};
-
-// Fonction pour réinitialiser la recherche (sans recharger depuis le serveur)
-const reinitialiserRecherche = () => {
-  searchQuery.value = '';
-  message.value = '';
-  // Si on a déjà des données, on les affiche sans recharger
-  if (produits.value.length > 0) {
-    message.value = `${produits.value.length} produit(s) affiché(s)`;
-    isSuccess.value = true;
-    setTimeout(() => {
-      message.value = '';
-    }, 2000);
-  } else {
-    // Sinon on charge depuis le serveur
-    fetchProduits();
   }
 };
 
@@ -193,21 +185,36 @@ const rechercherProduits = async () => {
     
     produits.value = data;
     
-    // Afficher un message selon les résultats
+    // Afficher un message selon les résultats avec SweetAlert2
     if (data.length === 0) {
-      message.value = `Aucun produit trouvé pour "${termeCleaned}"`;
-      isSuccess.value = false;
+      await Swal.fire({
+        icon: 'info',
+        title: 'Aucun résultat',
+        text: `Aucun produit trouvé pour "${termeCleaned}"`,
+        confirmButtonColor: '#3085d6'
+      });
     } else {
-      message.value = `${data.length} produit(s) trouvé(s) pour "${termeCleaned}"`;
-      isSuccess.value = true;
+      await Swal.fire({
+        icon: 'success',
+        title: 'Recherche terminée!',
+        text: `${data.length} produit(s) trouvé(s) pour "${termeCleaned}"`,
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
     }
     
     // Reset to first page after fetching new data
     currentPage.value = 1;
   } catch (error) {
     console.error('Erreur lors de la recherche des produits:', error);
-    message.value = 'Erreur lors de la recherche des produits.';
-    isSuccess.value = false;
+    await Swal.fire({
+      icon: 'error',
+      title: 'Erreur!',
+      text: 'Erreur lors de la recherche des produits.',
+      confirmButtonColor: '#d33'
+    });
   } finally {
     isLoading.value = false;
   }
@@ -228,8 +235,12 @@ const fetchProduits = async () => {
     currentPage.value = 1;
   } catch (error) {
     console.error('Erreur lors de la récupération des produits:', error);
-    message.value = 'Erreur lors de la récupération des produits.';
-    isSuccess.value = false;
+    await Swal.fire({
+      icon: 'error',
+      title: 'Erreur!',
+      text: 'Erreur lors de la récupération des produits.',
+      confirmButtonColor: '#d33'
+    });
   } finally {
     isLoading.value = false;
   }
@@ -265,9 +276,7 @@ const enregistrerModification = async () => {
       });
 
       const data = await response.json();
-      message.value = data.message;
-      isSuccess.value = response.ok;
-
+      
       if (response.ok) {
         const index = produits.value.findIndex(p => p.numproduit === produitAModifier.value.numproduit);
         if (index !== -1) {
@@ -278,11 +287,33 @@ const enregistrerModification = async () => {
           };
         }
         produitAModifier.value = null;
+        
+        // Afficher un message de succès avec SweetAlert2
+        await Swal.fire({
+          icon: 'success',
+          title: 'Succès!',
+          text: data.message || 'Produit modifié avec succès',
+          timer: 2000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+      } else {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Erreur!',
+          text: data.message || 'Erreur lors de la modification',
+          confirmButtonColor: '#d33'
+        });
       }
     } catch (error) {
       console.error('Erreur lors de la modification du produit:', error);
-      message.value = 'Erreur lors de la modification du produit.';
-      isSuccess.value = false;
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur!',
+        text: 'Erreur lors de la modification du produit.',
+        confirmButtonColor: '#d33'
+      });
     }
   }
 };
@@ -290,28 +321,81 @@ const enregistrerModification = async () => {
 const supprimerProduit = async (id) => {
   if (id === undefined) {
     console.error("L'ID du produit est undefined");
-    message.value = "Impossible de supprimer le produit : ID manquant";
-    isSuccess.value = false;
+    await Swal.fire({
+      icon: 'error',
+      title: 'Erreur!',
+      text: "Impossible de supprimer le produit : ID manquant",
+      confirmButtonColor: '#d33'
+    });
     return;
   }
-  if (confirm(`Êtes-vous sûr de vouloir supprimer le produit avec l'ID ${id} ?`)) {
+
+  // Trouver le produit pour afficher ses informations dans la confirmation
+  const produit = produits.value.find(p => p.numproduit === id);
+  const designProduit = produit ? produit.design : `ID ${id}`;
+
+  // Utiliser SweetAlert2 pour la confirmation de suppression
+  const result = await Swal.fire({
+    title: 'Êtes-vous sûr?',
+    html: `Vous allez supprimer le produit :<br><strong>"${designProduit}"</strong><br><br>Cette action est irréversible!`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Oui, supprimer!',
+    cancelButtonText: 'Annuler',
+    reverseButtons: true,
+    focusCancel: true
+  });
+
+  if (result.isConfirmed) {
     try {
+      // Afficher un loader pendant la suppression
+      Swal.fire({
+        title: 'Suppression en cours...',
+        text: 'Veuillez patienter',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       const response = await fetch(`http://localhost/backend/supprimer_produit.php?id=${id}`, {
         method: 'DELETE',
       });
 
       const data = await response.json();
-      message.value = data.message;
-      isSuccess.value = response.ok;
 
       if (response.ok) {
+        // Fermer le loader et afficher le succès
+        await Swal.fire({
+          icon: 'success',
+          title: 'Supprimé!',
+          text: data.message || 'Le produit a été supprimé avec succès.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
         // Après suppression, rafraîchir la liste
         await rafraichirListe();
+      } else {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Erreur!',
+          text: data.message || 'Erreur lors de la suppression du produit.',
+          confirmButtonColor: '#d33'
+        });
       }
     } catch (error) {
       console.error('Erreur lors de la suppression du produit:', error);
-      message.value = 'Erreur lors de la suppression du produit.';
-      isSuccess.value = false;
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur!',
+        text: 'Erreur lors de la suppression du produit.',
+        confirmButtonColor: '#d33'
+      });
     }
   }
 };
@@ -402,7 +486,7 @@ h1 {
   outline: none;
 }
 
-.btn-rechercher, .btn-reinitialiser, .btn-rafraichir {
+.btn-rechercher, .btn-rafraichir {
   padding: 12px 24px;
   border: none;
   border-radius: 10px;
@@ -414,7 +498,7 @@ h1 {
 }
 
 .btn-rechercher {
-  background-color: #1a73e8;
+  background-color: #3B82F6;
   color: #ffffff;
 }
 
@@ -422,17 +506,6 @@ h1 {
   background-color: #155ab2;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
-}
-
-.btn-reinitialiser {
-  background-color: #6c757d;
-  color: #ffffff;
-}
-
-.btn-reinitialiser:hover {
-  background-color: #5a6268;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
 }
 
 .btn-rafraichir {
@@ -446,7 +519,7 @@ h1 {
   box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
 }
 
-.btn-rechercher:active, .btn-reinitialiser:active, .btn-rafraichir:active {
+.btn-rechercher:active, .btn-rafraichir:active {
   transform: translateY(0);
   box-shadow: none;
 }
@@ -632,7 +705,7 @@ p {
 
 .modifier-form input[type="text"]:focus,
 .modifier-form input[type="number"]:focus {
-  border-color: #1a73e8;
+  border-color: #3B82F6;
   box-shadow: 0 0 10px rgba(26, 115, 232, 0.3);
   background-color: #ffffff;
   outline: none;
@@ -650,12 +723,12 @@ p {
 }
 
 .modifier-form button[type="submit"] {
-  background-color: #1a73e8;
+  background-color: #3B82F6;
   color: #ffffff;
 }
 
 .modifier-form button[type="submit"]:hover {
-  background-color: #155ab2;
+  background-color: #3B82F6;
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(26, 115, 232, 0.4);
 }
