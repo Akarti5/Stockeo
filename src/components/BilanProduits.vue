@@ -10,17 +10,17 @@
 
       <div class="div2">
         <div class="title">Total des Montants</div>
-        <div class="value">{{ totalMontant.toFixed(2) }} €</div>
+        <div class="value">{{ formatMontant(totalMontant) }} €</div>
       </div>
 
       <div class="div3">
         <div class="title">Montant maximum</div>
-        <div class="value">{{ montantMaximal.toFixed(2) }} €</div>
+        <div class="value">{{ formatMontant(montantMaximal) }} €</div>
       </div>
 
       <div class="div4">
         <div class="title">Montant minimum</div>
-        <div class="value">{{ montantMinimal.toFixed(2) }}</div>
+        <div class="value">{{ formatMontant(montantMinimal) }}</div>
       </div>
 
       <div class="div5">
@@ -91,6 +91,15 @@ const canvasFound = ref(false)
 const errorMessage = ref('')
 const showDebug = ref(false)
 const chartCanvas = ref(null)
+
+//function format
+function formatMontant(value) {
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
 
 // Fonction pour obtenir la couleur de la barre
 const getBarColor = (montant) => {
