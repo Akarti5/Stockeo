@@ -20,7 +20,7 @@
 
       <div class="div4">
         <div class="title">Montant minimum</div>
-        <div class="value">{{ montantMinimal.toFixed(2) }} €</div>
+        <div class="value">{{ montantMinimal.toFixed(2) }}</div>
       </div>
 
       <div class="div5">
@@ -142,20 +142,6 @@ const fetchTotalProduits = async () => {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json()
-    
-    // Commentez ou supprimez la partie des données simulées
-    /*
-    const simulatedData = {
-      totalProduits: 6,
-      totalMontant: 150451.00,
-      montantMaximal: 78300.00,
-      montantMinimal: 669.00,
-      produits: [
-        // ... données simulées
-      ]
-    }
-    const data = simulatedData
-    */
     
     if (data && typeof data === 'object') {
       totalProduits.value = data.totalProduits || 0
@@ -416,7 +402,7 @@ h3 {
 .value {
   font-size: 30px;
   font-weight: bold;
-  color: rgb(55, 198, 255);
+  color:#1a3c5e;
   text-align: center;
   padding: 10px;
 }

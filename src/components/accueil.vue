@@ -6,7 +6,7 @@
         <div class="welcome-container">
           <!-- Left Side - Text Content -->
           <div class="welcome-left">
-            <h1 class="welcome-title">Bienvenue sur Stockeo</h1>
+            <h1 class="welcome-title"><span style="color: black;">Bienvenue sur </span>Stockeo</h1>
             <div class="welcome-description">
               <p>
                 Stockeo est une application web moderne et intuitive conçue pour révolutionner 
