@@ -75,7 +75,11 @@
 
     <div class="app-body">
       <!-- Sidebar Navigation - Style similaire à l'image -->
-      <nav class="sidebar" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <nav 
+      v-if="showLayout" 
+      class="sidebar" 
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    >
         <!-- Logo et titre dans la sidebar -->
         <div class="sidebar-header">
           <div class="sidebar-logo">
@@ -212,19 +216,26 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
+
+// Router navigation components (si utilisés dans le template)
 import { RouterLink, RouterView } from 'vue-router';
 
-// Reactive data
+const route = useRoute();
+
+// Afficher le layout si meta.layout !== 'none'
+const showLayout = computed(() => route.meta.layout !== 'none');
+
+// Données réactives
 const isDarkMode = ref(false);
 const isSidebarCollapsed = ref(false);
 const showUserMenu = ref(false);
 const notificationCount = ref(3);
 const userName = ref('Mathias W.');
 
-// Methods
+// Méthodes
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value;
   localStorage.setItem('darkMode', isDarkMode.value);
@@ -261,14 +272,17 @@ const logout = () => {
   showUserMenu.value = false;
 };
 
-// Close user menu when clicking outside
+// Fermer le menu utilisateur si on clique en dehors
 const closeUserMenu = (event) => {
-  if (!event.target.closest('.user-profile') && !event.target.closest('.user-dropdown')) {
+  if (
+    !event.target.closest('.user-profile') &&
+    !event.target.closest('.user-dropdown')
+  ) {
     showUserMenu.value = false;
   }
 };
 
-// Lifecycle
+// Cycle de vie
 onMounted(() => {
   const savedDarkMode = localStorage.getItem('darkMode');
   if (savedDarkMode !== null) {
