@@ -107,6 +107,7 @@ form {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
+  border: #60ebe0;
 }
 
 /* Animation au survol du formulaire */
@@ -119,7 +120,7 @@ form:hover {
 h1 {
   text-align: center;
   font-size: 2.2rem;
-  color: #1a3c5e;
+  color: #ffffff;
   margin-bottom: 30px;
   font-weight: 700;
   text-transform: uppercase;
@@ -146,7 +147,7 @@ label {
   display: block;
   margin-bottom: 10px;
   font-weight: 600;
-  color: #043e7b;
+  color: #a2c5eb;
   font-size: 1.15rem;
   transition: color 0.3s ease;
 }

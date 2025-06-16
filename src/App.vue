@@ -4,7 +4,7 @@
     <header class="header">
       <div class="header-left">
         <img src="../src/assets/logofinal.png" alt="Logo" class="logo" />
-        <h1 class="app-title"></h1>
+        <!-- <h1 class="app-title">Stockeo</h1> -->
       </div>
       
       <div class="header-right">
@@ -74,27 +74,36 @@
     </header>
 
     <div class="app-body">
-      <!-- Sidebar Navigation -->
+      <!-- Sidebar Navigation - Style similaire à l'image -->
       <nav class="sidebar" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-        <button class="sidebar-toggle" @click="toggleSidebar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+        <!-- Logo et titre dans la sidebar -->
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <div class="logo-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-9"></path>
+                <path d="M14 17H5"></path>
+                <circle cx="17" cy="17" r="3"></circle>
+                <circle cx="7" cy="7" r="3"></circle>
+              </svg>
+            </div>
+            <span class="sidebar-title">Menu</span>
+          </div>
+        </div>
         
+        <!-- Menu de navigation -->
         <div class="nav-menu">
-          <router-link to="/ajouter" class="nav-item" active-class="nav-item-active">
+          <router-link to="/dashboard" class="nav-item" active-class="nav-item-active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="16"></line>
-              <line x1="8" y1="12" x2="16" y2="12"></line>
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-            <span class="nav-text">Ajouter Produit</span>
+            <span class="nav-text">Dashboard</span>
           </router-link>
           
-          <router-link to="/lister-modifier" class="nav-item" active-class="nav-item-active">
+          <router-link to="/ajouter" class="nav-item" active-class="nav-item-active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M8 6h13"></path>
               <path d="M8 12h13"></path>
@@ -103,16 +112,75 @@
               <path d="M3 12h.01"></path>
               <path d="M3 18h.01"></path>
             </svg>
-            <span class="nav-text">Liste et Modification</span>
+            <span class="nav-text">Ajouter Produit</span>
+          </router-link>
+
+          <router-link to="/lister-modifier" class="nav-item nav-item-active" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="nav-text">Liste et modification</span>
           </router-link>
           
           <router-link to="/bilan" class="nav-item" active-class="nav-item-active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3v18h18"></path>
-              <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
             </svg>
             <span class="nav-text">Bilan et Graphique</span>
           </router-link>
+          
+          
+          <router-link to="/project" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+            <span class="nav-text">Project</span>
+          </router-link>
+          
+          
+          <router-link to="/request" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="nav-text">Request</span>
+          </router-link>
+          
+          <router-link to="/onhand" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"></path>
+            </svg>
+            <span class="nav-text">On hand</span>
+          </router-link>
+          
+          <router-link to="/grn-report" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+            <span class="nav-text">GRN Report</span>
+          </router-link>
+        </div>
+
+        <!-- Boutons en bas de la sidebar -->
+        <div class="sidebar-footer">
+          <button class="theme-toggle" @click="toggleTheme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="m12 2 1.02 2.03L16 3l1.03 3.02L20 7l-1.03 3.02L16 11l-3.02-1.03L12 22l-1.02-2.03L8 21l-1.03-3.02L4 17l1.03-3.02L8 13l3.02 1.03L12 2z"></path>
+            </svg>
+            <span class="theme-text">Light</span>
+          </button>
+          <button class="theme-toggle theme-dark" @click="toggleTheme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span class="theme-text">Dark</span>
+          </button>
         </div>
       </nav>
 
@@ -121,11 +189,6 @@
         <router-view></router-view>
       </main>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <p>© {{ new Date().getFullYear() }} Stockeo - Gestion des stocks des Produits</p>
-    </footer>
   </div>
 </template>
 
@@ -138,10 +201,15 @@ const isDarkMode = ref(false);
 const isSidebarCollapsed = ref(false);
 const showUserMenu = ref(false);
 const notificationCount = ref(3);
-const userName = ref('John Doe');
+const userName = ref('Mathias W.');
 
 // Methods
 const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value;
+  localStorage.setItem('darkMode', isDarkMode.value);
+};
+
+const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value;
   localStorage.setItem('darkMode', isDarkMode.value);
 };
@@ -156,24 +224,20 @@ const toggleUserMenu = () => {
 
 const openSettings = () => {
   console.log('Opening settings...');
-  // Add your settings logic here
 };
 
 const openNotifications = () => {
   console.log('Opening notifications...');
-  // Add your notifications logic here
 };
 
 const viewProfile = () => {
   console.log('Viewing profile...');
   showUserMenu.value = false;
-  // Add your profile logic here
 };
 
 const logout = () => {
   console.log('Logging out...');
   showUserMenu.value = false;
-  // Add your logout logic here
 };
 
 // Close user menu when clicking outside
@@ -185,13 +249,10 @@ const closeUserMenu = (event) => {
 
 // Lifecycle
 onMounted(() => {
-  // Load dark mode preference
   const savedDarkMode = localStorage.getItem('darkMode');
   if (savedDarkMode !== null) {
     isDarkMode.value = JSON.parse(savedDarkMode);
   }
-  
-  // Add click listener for closing user menu
   document.addEventListener('click', closeUserMenu);
 });
 
@@ -203,26 +264,30 @@ onUnmounted(() => {
 <style scoped>
 /* CSS Variables for theming */
 :root {
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
-  --accent-color: #35a0d2;
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --accent-color: #0ea5e9;
   --bg-light: #ffffff;
-  --bg-gray: #f8f9fa;
-  --text-dark: #2c3e50;
-  --text-light: #6c757d;
-  --border-color: #e9ecef;
-  --sidebar-width: 260px;
+  --bg-gray: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --sidebar-width: 280px;
   --sidebar-collapsed-width: 60px;
   --header-height: 70px;
-  --footer-height: 50px;
 }
 
 .dark-mode {
-  --bg-light: #1a1a1a;
-  --bg-gray: #2d2d2d;
-  --text-dark: #ffffff;
-  --text-light: #b0b0b0;
-  --border-color: #404040;
+  --bg-light: #0f172a;
+  --bg-gray: #1e293b;
+  --bg-sidebar: #1e293b;
+  --text-dark: #f8fafc;
+  --text-light: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
 }
 
 /* App container */
@@ -237,14 +302,14 @@ onUnmounted(() => {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   color: white;
   height: var(--header-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   position: relative;
   z-index: 1000;
 }
@@ -256,13 +321,13 @@ onUnmounted(() => {
 }
 
 .logo {
-  height: 40px;
+  height: 32px;
   width: auto;
 }
 
 .app-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -274,7 +339,7 @@ onUnmounted(() => {
 .header-icons {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   position: relative;
 }
 
@@ -284,8 +349,8 @@ onUnmounted(() => {
   color: white;
   cursor: pointer;
   padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 6px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,12 +358,11 @@ onUnmounted(() => {
 
 .icon-btn:hover {
   background: rgba(255,255,255,0.1);
-  transform: translateY(-2px);
 }
 
 .icon-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .notification-btn {
@@ -307,18 +371,18 @@ onUnmounted(() => {
 
 .notification-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  background: #ff4757;
+  top: 2px;
+  right: 2px;
+  background: #ef4444;
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .user-profile {
@@ -326,9 +390,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .user-profile:hover {
@@ -336,8 +400,8 @@ onUnmounted(() => {
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: rgba(255,255,255,0.2);
   border-radius: 50%;
   display: flex;
@@ -346,19 +410,19 @@ onUnmounted(() => {
 }
 
 .user-avatar svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .user-name {
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .dropdown-arrow {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s ease;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
 }
 
 .user-dropdown {
@@ -368,8 +432,8 @@ onUnmounted(() => {
   background: var(--bg-light);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  min-width: 180px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  min-width: 160px;
   z-index: 1001;
   margin-top: 0.5rem;
 }
@@ -380,8 +444,9 @@ onUnmounted(() => {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
   color: var(--text-dark);
+  font-size: 0.875rem;
 }
 
 .dropdown-item:hover {
@@ -399,92 +464,143 @@ onUnmounted(() => {
   flex: 1;
 }
 
-/* Sidebar */
+/* Sidebar - Style similaire à l'image */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--bg-light);
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
-  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
   transition: all 0.3s ease;
   position: relative;
+}
+
+.sidebar-header {
+  padding: 1.5rem 1rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.logo-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.nav-menu {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-light);
+  transition: all 0.2s ease;
+  margin: 0.125rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: var(--bg-light);
+  color: var(--text-dark);
+}
+
+.nav-item-active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.nav-item-active:hover {
+  background: var(--primary-hover);
+  color: white;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.nav-text {
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.theme-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-light);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.theme-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.theme-dark {
+  background: var(--text-dark);
+  color: white;
+  border-color: var(--text-dark);
 }
 
 .sidebar-collapsed {
   width: var(--sidebar-collapsed-width);
 }
 
-.sidebar-toggle {
-  position: absolute;
-  top: 1rem;
-  right: -12px;
-  background: var(--bg-light);
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.sidebar-toggle:hover {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
-
-.sidebar-toggle svg {
-  width: 14px;
-  height: 14px;
-}
-
-.nav-menu {
-  padding: 2rem 0;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  text-decoration: none;
-  color: var(--text-light);
-  transition: all 0.3s ease;
-  margin: 0.25rem 1rem;
-  border-radius: 8px;
-  position: relative;
-}
-
-.nav-item:hover {
-  background: var(--bg-gray);
-  color: var(--text-dark);
-}
-
-.nav-item-active {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-}
-
-.nav-item-active:hover {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-}
-
-.nav-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.nav-text {
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-collapsed .nav-text {
+.sidebar-collapsed .nav-text,
+.sidebar-collapsed .sidebar-title,
+.sidebar-collapsed .theme-text {
   opacity: 0;
   pointer-events: none;
 }
@@ -494,31 +610,21 @@ onUnmounted(() => {
   padding: 0.75rem;
 }
 
-/* Main content */
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  background: var(--bg-gray);
-  min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  overflow-y: auto;
-}
-
-/* Footer */
-.footer {
-  background: var(--bg-light);
-  border-top: 1px solid var(--border-color);
-  color: var(--text-light);
-  text-align: center;
-  padding: 1rem;
-  height: var(--footer-height);
-  display: flex;
-  align-items: center;
+.sidebar-collapsed .sidebar-logo {
   justify-content: center;
 }
 
-.footer p {
-  margin: 0;
-  font-size: 0.875rem;
+.sidebar-collapsed .theme-toggle {
+  padding: 0.5rem;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 0;
+  background: var(--bg-light);
+  min-height: calc(100vh - var(--header-height));
+  overflow-y: auto;
 }
 
 /* Responsive design */
@@ -527,7 +633,7 @@ onUnmounted(() => {
     padding: 0 1rem;
   }
   
-  .header-left .app-title {
+  .app-title {
     display: none;
   }
   
@@ -539,49 +645,33 @@ onUnmounted(() => {
     width: var(--sidebar-collapsed-width);
   }
   
-  .nav-text {
+  .nav-text,
+  .sidebar-title,
+  .theme-text {
     display: none;
   }
-  
-  .main-content {
-    padding: 1rem;
-  }
 }
 
-@media (max-width: 480px) {
-  .header-icons {
-    gap: 0.5rem;
-  }
-  
-  .icon-btn {
-    padding: 0.25rem;
-  }
-  
-  .user-profile {
-    padding: 0.25rem 0.5rem;
-  }
-}
-
-/* Smooth transitions for all interactive elements */
+/* Smooth transitions */
 * {
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Custom scrollbar for main content */
-.main-content::-webkit-scrollbar {
-  width: 6px;
+/* Custom scrollbar */
+.nav-menu::-webkit-scrollbar {
+  width: 4px;
 }
 
-.main-content::-webkit-scrollbar-track {
-  background: var(--bg-gray);
+.nav-menu::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.main-content::-webkit-scrollbar-thumb {
+.nav-menu::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
-.main-content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-light);
+.nav-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 </style>

@@ -3,6 +3,7 @@ import Accueil from '../components/accueil.vue'
 import AjouterProduit from '../components/AjouterProduit.vue';
 import ListeProduits from '../components/ListeProduits.vue';
 import BilanProduits from '../components/BilanProduits.vue';
+import Dashboard from '../components/Dashboard.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,6 +13,7 @@ const router = createRouter({
     { path: '/lister-modifier', component: ListeProduits },
     { path: '/bilan', component: BilanProduits },
     { path: '/accueil', component: Accueil },
+    { path: '/dashboard' , component: Dashboard}
   ],
 });
 
