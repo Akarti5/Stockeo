@@ -107,21 +107,6 @@
             <span class="nav-text">Dashboard</span>
           </router-link>
           
-          <router-link to="/ajouter" class="nav-item" active-class="nav-item-active">
-            <svg
-    class="nav-icon"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M12 5v14" />
-    <path d="M5 12h14" />
-  </svg>
-            <span class="nav-text">Ajouter Produit</span>
-          </router-link>
 
           <router-link to="/lister-modifier" class="nav-item nav-item-active" active-class="nav-item-active">
             <svg
@@ -161,34 +146,48 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
             </svg>
-            <span class="nav-text">Project</span>
+            <span class="nav-text">Historique</span>
           </router-link>
+
+          <router-link to="/grn-report" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <!-- Tête du robot -->
+  <rect x="3" y="3" width="18" height="15" rx="3"></rect>
+  
+  <!-- Antennes -->
+  <line x1="9" y1="3" x2="9" y2="1"></line>
+  <line x1="15" y1="3" x2="15" y2="1"></line>
+  <circle cx="9" cy="1" r="1.5"></circle>
+  <circle cx="15" cy="1" r="1.5"></circle>
+  
+  <!-- Yeux -->
+  <circle cx="9" cy="9" r="1.5"></circle>
+  <circle cx="15" cy="9" r="1.5"></circle>
+  
+  <!-- Bouche/interface -->
+  <line x1="7" y1="14" x2="17" y2="14"></line>
+</svg>
+            <span class="nav-text">AI copilot</span>
+          </router-link>
+
+          <router-link to="/onhand" class="nav-item" active-class="nav-item-active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"></path>
+            </svg>
+            <span class="nav-text">Securite</span>
+          </router-link>
+          
           
           
           <router-link to="/request" class="nav-item" active-class="nav-item-active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
-            <span class="nav-text">Request</span>
+            <span class="nav-text">Support</span>
           </router-link>
           
-          <router-link to="/onhand" class="nav-item" active-class="nav-item-active">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"></path>
-            </svg>
-            <span class="nav-text">On hand</span>
-          </router-link>
+         
           
-          <router-link to="/grn-report" class="nav-item" active-class="nav-item-active">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14,2 14,8 20,8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10,9 9,9 8,9"></polyline>
-            </svg>
-            <span class="nav-text">GRN Report</span>
-          </router-link>
         </div>
 
         <!-- Boutons en bas de la sidebar -->
@@ -233,7 +232,54 @@ const isDarkMode = ref(false);
 const isSidebarCollapsed = ref(false);
 const showUserMenu = ref(false);
 const notificationCount = ref(3);
-const userName = ref('Mathias W.');
+
+// État d'authentification
+const isLoggedIn = ref(false);
+const currentUser = ref(null);
+const userName = ref('Utilisateur');
+
+// Fonction pour vérifier l'état d'authentification
+const checkAuthState = () => {
+  const savedUser = localStorage.getItem('user');
+  const savedIsLoggedIn = localStorage.getItem('isLoggedIn');
+  
+  if (savedUser && savedIsLoggedIn === 'true') {
+    isLoggedIn.value = true;
+    currentUser.value = JSON.parse(savedUser);
+    userName.value = currentUser.value.nom || 'Utilisateur';
+  } else {
+    isLoggedIn.value = false;
+    currentUser.value = null;
+    userName.value = 'Utilisateur';
+  }
+};
+
+// Fonction pour écouter les changements dans localStorage
+const setupStorageListener = () => {
+  // Écouter les changements de localStorage entre onglets
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'user' || e.key === 'isLoggedIn') {
+      checkAuthState();
+    }
+  });
+  
+  // Écouter les changements dans la même page
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments);
+    if (key === 'user' || key === 'isLoggedIn') {
+      checkAuthState();
+    }
+  };
+  
+  const originalRemoveItem = localStorage.removeItem;
+  localStorage.removeItem = function(key) {
+    originalRemoveItem.apply(this, arguments);
+    if (key === 'user' || key === 'isLoggedIn') {
+      checkAuthState();
+    }
+  };
+};
 
 // Méthodes
 const toggleDarkMode = () => {
@@ -268,8 +314,22 @@ const viewProfile = () => {
 };
 
 const logout = () => {
+  // Nettoyer localStorage
+  localStorage.removeItem('user');
+  localStorage.removeItem('isLoggedIn');
+  
+  // Mettre à jour l'état local
+  isLoggedIn.value = false;
+  currentUser.value = null;
+  userName.value = 'Utilisateur';
+  
   console.log('Logging out...');
   showUserMenu.value = false;
+  
+  // Rediriger vers la page d'accueil
+  if (route.path !== '/') {
+    window.location.href = '/';
+  }
 };
 
 // Fermer le menu utilisateur si on clique en dehors
@@ -288,6 +348,13 @@ onMounted(() => {
   if (savedDarkMode !== null) {
     isDarkMode.value = JSON.parse(savedDarkMode);
   }
+  
+  // Vérifier l'état d'authentification au chargement
+  checkAuthState();
+  
+  // Configurer l'écoute des changements de localStorage
+  setupStorageListener();
+  
   document.addEventListener('click', closeUserMenu);
 });
 

@@ -18,8 +18,6 @@
       <button type="submit">Ajouter le Produit</button>
     </form>
 
-
-
     <!-- Success/Error Modal -->
     <div v-if="showResultModal" class="modal-overlay" @click="closeResultModal">
       <div class="modal-content" @click.stop>
@@ -68,20 +66,82 @@ const ajouterNouveauProduit = async () => {
   isLoading.value = true;
   
   try {
+    // Vérifier d'abord isLoggedIn
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    console.log("isLoggedIn:", isLoggedIn);
+    
+    if (isLoggedIn !== 'true' && isLoggedIn !== 'True') {
+      message.value = 'Utilisateur non connecté. Veuillez vous connecter.';
+      isSuccess.value = false;
+      showResultModal.value = true;
+      isLoading.value = false;
+      return;
+    }
+
+    // Récupérer et parser l'utilisateur
+    const userString = localStorage.getItem('user');
+    console.log("user string:", userString);
+    
+    if (!userString || userString === 'undefined') {
+      message.value = 'Données utilisateur non trouvées. Veuillez vous reconnecter.';
+      isSuccess.value = false;
+      showResultModal.value = true;
+      isLoading.value = false;
+      return;
+    }
+
+    let user;
+    try {
+      user = JSON.parse(userString);
+      console.log("user object:", user);
+    } catch (parseError) {
+      console.error("Erreur parsing JSON:", parseError);
+      message.value = 'Erreur lors de la lecture des données utilisateur.';
+      isSuccess.value = false;
+      showResultModal.value = true;
+      isLoading.value = false;
+      return;
+    }
+
+    const userId = user?.id;
+    console.log("userId:", userId, "type:", typeof userId);
+    
+    if (!userId || userId === 'undefined') {
+      message.value = 'ID utilisateur non trouvé. Veuillez vous reconnecter.';
+      isSuccess.value = false;
+      showResultModal.value = true;
+      isLoading.value = false;
+      return;
+    }
+
+    // Préparer les données du produit
+    const produitData = {
+      design: nouveauProduit.value.design,
+      prix: parseFloat(nouveauProduit.value.prix),
+      quantite: parseInt(nouveauProduit.value.quantite),
+      user_id: parseInt(userId)
+    };
+
+    console.log('Données envoyées:', produitData);
+
     const response = await fetch('http://localhost/backend/ajouter_produit.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // CORRECTION: Ajouter l'Authorization header
+        'Authorization': `Bearer ${userId}`
       },
-      body: JSON.stringify(nouveauProduit.value),
+      body: JSON.stringify(produitData),
     });
 
     const data = await response.json();
-    message.value = data.message;
-    isSuccess.value = response.ok;
+    console.log('Réponse du serveur:', data);
+    
+    message.value = data.message || 'Réponse du serveur';
+    isSuccess.value = data.success || response.ok;
 
     // Réinitialiser le formulaire en cas de succès
-    if (response.ok) {
+    if (data.success || response.ok) {
       nouveauProduit.value = { design: '', prix: null, quantite: null };
     }
   } catch (error) {
@@ -94,7 +154,144 @@ const ajouterNouveauProduit = async () => {
   }
 };
 </script>
+<style scoped>
+/* Styles pour le formulaire */
+div {
+  margin-bottom: 15px;
+}
 
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  max-width: 300px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Styles pour la modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-icon {
+  margin-bottom: 20px;
+}
+
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.icon-circle.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.icon-circle.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.modal-title {
+  margin: 0 0 15px 0;
+  font-size: 1.5em;
+}
+
+.modal-text {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.btn-ok {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-ok:hover {
+  background-color: #0056b3;
+}
+
+/* Styles pour le loading */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  color: white;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-left: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
 <style scoped>
 /* Conteneur global */
 form {

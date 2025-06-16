@@ -2,18 +2,24 @@
     <div class="landing-page">
       <!-- Header -->
       <header class="header">
-        <nav class="nav container">
-          <div class="logo">
-            <img src="@/assets/Stockeo.png" alt="Stockeo" class="logo-img" />
-            Stockeo
-          </div>
-          <ul class="nav-links">
-            <li><a href="#" @click="currentPage = 'home'" :class="{ active: currentPage === 'home' }">Accueil</a></li>
-            <li><a href="#" @click="currentPage = 'about'" :class="{ active: currentPage === 'about' }">À propos</a></li>
-          </ul>
-          <button @click="openLoginModal" class="get-started-btn">Se connecter</button>
-        </nav>
-      </header>
+  <nav class="nav container">
+    <div class="logo">
+      <img src="@/assets/Stockeo.png" alt="Stockeo" class="logo-img" />
+      Stockeo
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" @click="currentPage = 'home'" :class="{ active: currentPage === 'home' }">Accueil</a></li>
+      <li><a href="#" @click="currentPage = 'about'" :class="{ active: currentPage === 'about' }">À propos</a></li>
+    </ul>
+    
+    <!-- Affichage conditionnel selon l'état de connexion -->
+    <div v-if="isLoggedIn" class="user-section">
+      <span class="user-greeting">Salut, {{ currentUser.nom }}!</span>
+      <button @click="handleLogout" class="logout-btn">Se déconnecter</button>
+    </div>
+    <button v-else @click="openLoginModal" class="get-started-btn">Se connecter</button>
+  </nav>
+</header>
   
       <main class="main-content">
         <!-- Home Section -->
@@ -29,9 +35,9 @@
               <h1 class="hero-title">Bienvenue sur Stockeo</h1>
               <p class="hero-subtitle">Stockeo vous aide à gérer vos produits, quantités et mouvements de stock de manière simple et intuitive.</p>
               <div class="cta-buttons">
-                <router-link to="/dashboard" class="cta-primary">Commencer</router-link>
-                <button @click="currentPage = 'about'" class="cta-secondary">En savoir plus</button>
-              </div>
+  <button @click="handleDashboardAccess" class="cta-primary">Commencer</button>
+  <button @click="currentPage = 'about'" class="cta-secondary">En savoir plus</button>
+</div>
             </div>
           </div>
         </section>
@@ -133,10 +139,17 @@
                 required
               />
             </div>
+            <!-- Dans votre formulaire, ajoutez : -->
+<div v-if="message" class="message" :class="{ 'success': message.includes('succès'), 'error': !message.includes('succès') }">
+  {{ message }}
+</div>
 
-            <button type="submit" class="submit-btn">
-              {{ isLoginMode ? 'Se connecter' : 'Créer le compte' }}
-            </button>
+<button type="submit" class="submit-btn" :disabled="loading">
+  <span v-if="loading">⏳ Traitement...</span>
+  <span v-else>{{ isLoginMode ? 'Se connecter' : 'Créer le compte' }}</span>
+</button>
+
+        
           </form>
 
           <div class="modal-footer">
@@ -199,6 +212,8 @@
   </template>
   
   <script>
+  import { registerUser, loginUser, logoutUser } from '@/API/auth.js'
+
   export default {
     name: 'Landing',
     data() {
@@ -215,7 +230,12 @@
           password: '',
           confirmPassword: ''
         },
-        forgotEmail: ''
+        forgotEmail: '',
+        loading: false,
+        message: '',
+        // Nouvel état pour l'authentification
+        isLoggedIn: false,
+        currentUser: null
       }
     },
     watch: {
@@ -228,11 +248,18 @@
       }
     },
     methods: {
+        handleDashboardAccess() {
+  if (this.isLoggedIn) {
+    // Utilisateur connecté, rediriger vers le dashboard
+    this.$router.push('/dashboard');
+  } else {
+    // Utilisateur non connecté, ouvrir le modal de connexion
+    this.openLoginModal();
+  }
+},
+      // Vos méthodes existantes...
       animateNumbers() {
-        // Animation pour les utilisateurs (20k+)
         this.animateValue('animatedUsers', 0, 20000, 2000, '+', 'k')
-        
-        // Animation pour l'expérience (5 ans)
         this.animateValue('animatedExperience', 0, 3, 1500, '', ' ans')
       },
       
@@ -241,10 +268,7 @@
         const animate = (currentTime) => {
           const elapsed = currentTime - startTime
           const progress = Math.min(elapsed / duration, 1)
-          
-          // Fonction d'easing pour un effet plus fluide
           const easeOut = 1 - Math.pow(1 - progress, 3)
-          
           let currentValue = Math.floor(start + (end - start) * easeOut)
           
           if (property === 'animatedUsers') {
@@ -263,11 +287,9 @@
             requestAnimationFrame(animate)
           }
         }
-        
         requestAnimationFrame(animate)
       },
 
-      // Modal methods
       openLoginModal() {
         this.showLoginModal = true
         document.body.style.overflow = 'hidden'
@@ -291,24 +313,103 @@
           password: '',
           confirmPassword: ''
         }
+        this.message = ''
       },
 
-      handleSubmit() {
-        if (this.isLoginMode) {
-          // Logique de connexion
-          console.log('Connexion:', { email: this.form.email, password: this.form.password })
-          // Ici vous pouvez ajouter votre logique d'authentification
-          // Par exemple: this.$router.push('/dashboard')
-        } else {
-          // Logique d'inscription
-          if (this.form.password !== this.form.confirmPassword) {
-            alert('Les mots de passe ne correspondent pas')
-            return
+      // Méthode handleSubmit mise à jour
+      async handleSubmit() {
+        this.loading = true
+        this.message = ''
+
+        try {
+          if (this.isLoginMode) {
+            // Connexion
+            const result = await loginUser({
+              email: this.form.email,
+              mot_de_passe: this.form.password
+            })
+
+            if (result.success && result.data.success) {
+              this.message = 'Connexion réussie !'
+              
+              // Mettre à jour l'état de connexion
+              this.isLoggedIn = true
+              this.currentUser = result.data.user
+              
+              // Stocker dans localStorage
+              localStorage.setItem('user', JSON.stringify(result.data.user))
+              localStorage.setItem('isLoggedIn', 'true')
+              
+              setTimeout(() => {
+                this.closeLoginModal()
+              }, 1500)
+            } else {
+              this.message = result.data?.message || 'Erreur lors de la connexion'
+            }
+          } else {
+            // Inscription
+            if (this.form.password !== this.form.confirmPassword) {
+              this.message = 'Les mots de passe ne correspondent pas'
+              return
+            }
+
+            if (this.form.password.length < 6) {
+              this.message = 'Le mot de passe doit contenir au moins 6 caractères'
+              return
+            }
+
+            const result = await registerUser({
+              nom: this.form.name,
+              email: this.form.email,
+              mot_de_passe: this.form.password
+            })
+
+            if (result.success && result.data.success) {
+              this.message = 'Compte créé avec succès !'
+              setTimeout(() => {
+                this.isLoginMode = true
+                this.resetForm()
+              }, 2000)
+            } else {
+              this.message = result.data?.message || 'Erreur lors de la création du compte'
+            }
           }
-          console.log('Inscription:', this.form)
-          // Ici vous pouvez ajouter votre logique d'inscription
+        } catch (error) {
+          console.error('Erreur:', error)
+          this.message = 'Erreur de connexion au serveur'
+        } finally {
+          this.loading = false
         }
-        this.closeLoginModal()
+      },
+
+      // Nouvelle méthode pour la déconnexion
+      async handleLogout() {
+        try {
+          const result = await logoutUser()
+          
+          // Nettoyer l'état local
+          this.isLoggedIn = false
+          this.currentUser = null
+          
+          // Nettoyer localStorage
+          localStorage.removeItem('user')
+          localStorage.removeItem('isLoggedIn')
+          
+          console.log('Déconnexion réussie')
+        } catch (error) {
+          console.error('Erreur lors de la déconnexion:', error)
+        }
+      },
+
+      // Méthode pour vérifier l'état de connexion au chargement
+      checkAuthState() {
+        const savedUser = localStorage.getItem('user')
+        const isLoggedIn = localStorage.getItem('isLoggedIn')
+        
+        if (savedUser && isLoggedIn === 'true') {
+          this.isLoggedIn = true
+          this.currentUser = JSON.parse(savedUser)
+        }
       },
 
       showForgotPassword() {
@@ -330,30 +431,38 @@
 
       handleForgotPassword() {
         console.log('Reset password for:', this.forgotEmail)
-        // Ici vous pouvez ajouter votre logique de réinitialisation de mot de passe
         alert('Un lien de réinitialisation a été envoyé à votre email')
         this.closeForgotModal()
       }
     },
     
     mounted() {
-      // Animation d'entrée pour la page d'accueil
-      if (this.currentPage === 'home') {
-        setTimeout(() => {
-          const title = document.querySelector('.hero-title')
-          const subtitle = document.querySelector('.hero-subtitle')
-          if (title) title.style.opacity = '1'
-          if (subtitle) subtitle.style.opacity = '1'
-        }, 100)
-      }
-    },
+  // Vérifier l'état de connexion au chargement de la page
+  this.checkAuthState();
+  
+  // Vérifier si l'utilisateur a été redirigé depuis une route protégée
+  if (this.$route.query.redirect && !this.isLoggedIn) {
+    // Ouvrir automatiquement le modal de connexion
+    this.openLoginModal();
+  }
+  
+  // Animation d'entrée pour la page d'accueil
+  if (this.currentPage === 'home') {
+    setTimeout(() => {
+      const title = document.querySelector('.hero-title');
+      const subtitle = document.querySelector('.hero-subtitle');
+      if (title) title.style.opacity = '1';
+      if (subtitle) subtitle.style.opacity = '1';
+    }, 100);
+  }
+},
+
 
     beforeUnmount() {
-      // Nettoyer les styles du body
       document.body.style.overflow = 'auto'
     }
   }
-  </script>
+</script>
   
   <style scoped>
   .landing-page {
@@ -839,6 +948,53 @@
   .forgot-modal {
     max-width: 400px;
   }
+
+  /* Styles pour la section utilisateur */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-greeting {
+  color: #FFFFFF;
+  font-weight: 500;
+  font-size: 17px;
+}
+
+.logout-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #ff3838;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-section {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .user-greeting {
+    font-size: 12px;
+  }
+  
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
   
   /* Animations */
   @keyframes fadeIn {

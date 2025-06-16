@@ -21,7 +21,7 @@
           <i class="fas fa-download"></i> Download
         </button>
         <button class="action-btn btn-add" @click="afficherFormulaireAjout">
-          <i class="fas fa-plus"></i> Add New
+          <i class="fas fa-plus"></i> Ajouter un Produit
         </button>
       </div>
     </div>
@@ -220,13 +220,104 @@ const annulerAjout = () => {
 
 const ajouterProduit = async () => {
   try {
+    // === AUTHENTIFICATION UTILISATEUR ===
+    console.log('=== VERIFICATION AUTHENTIFICATION ===');
+    
+    // Vérifier si l'utilisateur est connecté
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    console.log("isLoggedIn:", isLoggedIn);
+    
+    if (isLoggedIn !== 'true' && isLoggedIn !== 'True') {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Non connecté!',
+        text: 'Vous devez être connecté pour ajouter un produit.'
+      });
+      return;
+    }
+
+    // Récupérer les données utilisateur
+    const userString = localStorage.getItem('user');
+    console.log("user string:", userString);
+    
+    if (!userString || userString === 'undefined') {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur!',
+        text: 'Données utilisateur non trouvées. Veuillez vous reconnecter.'
+      });
+      return;
+    }
+
+    let user;
+    try {
+      user = JSON.parse(userString);
+      console.log("user object:", user);
+    } catch (parseError) {
+      console.error("Erreur parsing JSON:", parseError);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur!',
+        text: 'Erreur lors de la lecture des données utilisateur.'
+      });
+      return;
+    }
+
+    const userId = user?.id;
+    console.log("userId:", userId, "type:", typeof userId);
+    
+    if (!userId || userId === 'undefined') {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur!',
+        text: 'ID utilisateur non trouvé. Veuillez vous reconnecter.'
+      });
+      return;
+    }
+
+    // === PREPARATION DES DONNEES ===
+    const produitData = {
+      design: nouveauProduit.value.design,
+      prix: parseFloat(nouveauProduit.value.prix),
+      quantite: parseInt(nouveauProduit.value.quantite),
+      user_id: parseInt(userId)
+    };
+
+    console.log('=== DONNEES ENVOYEES ===');
+    console.log('produitData:', produitData);
+
+    // === ENVOI DE LA REQUETE ===
     const response = await fetch('http://localhost/backend/ajouter_produit.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nouveauProduit.value),
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}` // Ajouter l'en-tête d'authentification
+      },
+      body: JSON.stringify(produitData), // Envoyer les données avec user_id
     });
-    const data = await response.json();
-    if (response.ok) {
+
+    const responseText = await response.text();
+    console.log('=== REPONSE BRUTE ===');
+    console.log('Response text:', responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Erreur parsing response:', e);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Erreur serveur!',
+        text: 'Réponse serveur invalide.'
+      });
+      return;
+    }
+
+    console.log('=== REPONSE PARSEE ===');
+    console.log('data:', data);
+
+    // === TRAITEMENT DE LA REPONSE ===
+    if (response.ok && data.success) {
       await Swal.fire({
         icon: 'success',
         title: 'Succès!',
@@ -239,11 +330,26 @@ const ajouterProduit = async () => {
       annulerAjout();
       await fetchProduits();
     } else {
-      await Swal.fire({ icon: 'error', title: 'Erreur!', text: data.message || "Erreur lors de l'ajout." });
+      // Afficher les informations de debug en cas d'erreur
+      console.error('=== ERREUR SERVEUR ===');
+      console.error('Response status:', response.status);
+      console.error('Data:', data);
+      
+      await Swal.fire({ 
+        icon: 'error', 
+        title: 'Erreur!', 
+        text: data.message || "Erreur lors de l'ajout.",
+        footer: data.debug ? `Debug: ${JSON.stringify(data.debug)}` : null
+      });
     }
   } catch (error) {
+    console.error("=== ERREUR CATCH ===");
     console.error("Erreur lors de l'ajout:", error);
-    await Swal.fire({ icon: 'error', title: 'Erreur de Connexion!', text: 'Impossible de se connecter au serveur.' });
+    await Swal.fire({ 
+      icon: 'error', 
+      title: 'Erreur de Connexion!', 
+      text: 'Impossible de se connecter au serveur.' 
+    });
   }
 };
 
