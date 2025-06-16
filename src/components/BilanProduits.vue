@@ -20,7 +20,7 @@
 
       <div class="div4">
         <div class="title">Montant minimum</div>
-        <div class="value">{{ formatMontant(montantMinimal) }}</div>
+        <div class="value">{{ formatMontant(montantMinimal) }} €</div>
       </div>
 
       <div class="div5">
@@ -378,17 +378,18 @@ onMounted(async () => {
 h1 {
   text-align: center;
   font-size: 2.2rem;
-  color: #1a3c5e;
+  color: #e5ebf0;
   margin-bottom: 30px;
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1px;
+  margin-right: 800px;
 }
 
 h3 {
   text-align: center;
   margin-bottom: 15px;
-  color: #333;
+  color: #e6e3e3;
 }
 
 .parent {
@@ -396,14 +397,14 @@ h3 {
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 120px auto;
   gap: 20px;
-  background-color: #F1F5F9;
+  background-color: transparent;
   margin-top: 22px;
 }
 
 .title {
   font-size: 20px;
   font-weight: bold;
-  color: #333333;
+  color: #ffffff;
   text-align: center;
   padding: 10px;
 }
@@ -411,13 +412,13 @@ h3 {
 .value {
   font-size: 30px;
   font-weight: bold;
-  color:#1a3c5e;
+  color:#6be1ff;
   text-align: center;
   padding: 10px;
 }
 
 .div1, .div2, .div3, .div4 {
-  background-color: #FFF;
+  background-color: transparent;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -426,6 +427,7 @@ h3 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   margin-top: 25px;
+  
 }
 
 .div1:hover, .div2:hover, .div3:hover, .div4:hover {
@@ -435,7 +437,7 @@ h3 {
 
 .div5 {
   height: 650px; /* Augmenter la hauteur totale */
-  background-color: white;
+  background-color:transparent;
   grid-column: span 4 / span 4;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);

@@ -2,7 +2,7 @@
 <template>
   <div class="inventory-container">
     <div class="list-header">
-      <h1 class="list-title">All Items</h1>
+      <h1 class="list-title">Tous les produits</h1>
       <div class="search-and-actions">
         <div class="search-wrapper">
           <i class="fas fa-search search-icon"></i>
