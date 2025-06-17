@@ -4,8 +4,7 @@
       <header class="header">
   <nav class="nav container">
     <div class="logo">
-      <img src="@/assets/Stockeo.png" alt="Stockeo" class="logo-img" />
-      Stockeo
+      <img src="@/assets/fotsy.png" alt="Stockeo" class="logo-img" />
     </div>
     <ul class="nav-links">
       <li><a href="#" @click="currentPage = 'home'" :class="{ active: currentPage === 'home' }">Accueil</a></li>
@@ -82,12 +81,12 @@
 
           <div class="modal-header">
             <div class="modal-logo">
-              <img src="@/assets/Stockeo.png" alt="Stockeo" class="modal-logo-img" />
-              <span>Stockeo</span>
+              <img src="@/assets/fotsy.png" alt="Stockeo" class="modal-logo-img" />
+              <span></span>
             </div>
             <h2 class="modal-title">{{ isLoginMode ? 'Connexion' : 'Créer un compte' }}</h2>
             <p class="modal-subtitle">
-              {{ isLoginMode ? 'Connectez-vous à votre compte' : 'Rejoignez notre communauté' }}
+              {{ isLoginMode ? '' : '' }}
             </p>
           </div>
 
@@ -511,8 +510,8 @@
   }
   
   .logo-img {
-    width: 32px;
-    height: 32px;
+    width: 220px;
+    height: 60px;
   }
   
   .nav-links {
@@ -828,8 +827,8 @@
   }
 
   .modal-logo-img {
-    width: 28px;
-    height: 28px;
+    width: 140px;
+    height: 40px;
   }
 
   .modal-title {

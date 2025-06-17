@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="header">
       <div class="header-left">
-        <img src="../src/assets/logofinal.png" alt="Logo" class="logo" />
+        <img src="../src/assets/fotsy.png" alt="Logo" class="logo" />
         <!-- <h1 class="app-title">Stockeo</h1> -->
       </div>
       
