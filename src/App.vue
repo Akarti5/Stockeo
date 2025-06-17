@@ -149,7 +149,7 @@
             <span class="nav-text">Historique</span>
           </router-link>
 
-          <router-link to="/grn-report" class="nav-item" active-class="nav-item-active">
+          <router-link to="/copilot" class="nav-item" active-class="nav-item-active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
   <!-- Tête du robot -->
   <rect x="3" y="3" width="18" height="15" rx="3"></rect>

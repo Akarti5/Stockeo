@@ -4,6 +4,7 @@ import ListeProduits from '../components/ListeProduits.vue';
 import BilanProduits from '../components/BilanProduits.vue';
 import Dashboard from '../components/Dashboard.vue';
 import Landing from '../views/Landing.vue';
+import copilot from '../components/copilot.vue';
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
   { 
     path: '/dashboard', 
     component: Dashboard,
+    meta: { requiresAuth: true } // Route protégée
+  },
+  { 
+    path: '/copilot', 
+    component: copilot,  
     meta: { requiresAuth: true } // Route protégée
   },
 ];
