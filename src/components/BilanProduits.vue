@@ -32,6 +32,7 @@
           <p>Chart.js disponible: {{ chartJsAvailable ? 'Oui' : 'Non' }}</p>
           <p>Nombre de produits: {{ allProduits.length }}</p>
           <p>Canvas trouvé: {{ canvasFound ? 'Oui' : 'Non' }}</p>
+          <p>User ID: {{ currentUserId || 'Non trouvé' }}</p>
           <p>Erreur: {{ errorMessage || 'Aucune' }}</p>
           <button @click="showDebug = false" class="btn-close-debug">Fermer Debug</button>
         </div>
@@ -40,8 +41,13 @@
           Chargement du graphique...
         </div>
         
+        <div v-else-if="authError" class="error-message">
+          <p>{{ authError }}</p>
+          <button @click="retryLoad" class="retry-btn">Réessayer</button>
+        </div>
+        
         <div v-else-if="allProduits.length === 0" class="no-data">
-          Aucune donnée disponible pour le graphique
+          Aucun produit trouvé pour votre compte
         </div>
         
         <div v-else-if="!chartJsAvailable" class="error-message">
@@ -74,6 +80,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
+import Swal from 'sweetalert2'
 
 // Variables pour le graphique
 let produitsChart = null
@@ -89,8 +96,49 @@ const isLoading = ref(true)
 const chartJsAvailable = ref(false)
 const canvasFound = ref(false)
 const errorMessage = ref('')
+const authError = ref('')
 const showDebug = ref(false)
 const chartCanvas = ref(null)
+const currentUserId = ref(null)
+
+// Fonction pour obtenir les données utilisateur (même logique que votre code de produits)
+const getUserData = () => {
+  console.log('=== VERIFICATION AUTHENTIFICATION BILAN ===');
+  
+  // Vérifier si l'utilisateur est connecté
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  console.log("isLoggedIn:", isLoggedIn);
+  
+  if (isLoggedIn !== 'true' && isLoggedIn !== 'True') {
+    throw new Error('Utilisateur non connecté');
+  }
+
+  // Récupérer les données utilisateur
+  const userString = localStorage.getItem('user');
+  console.log("user string:", userString);
+  
+  if (!userString || userString === 'undefined') {
+    throw new Error('Données utilisateur non trouvées');
+  }
+
+  let user;
+  try {
+    user = JSON.parse(userString);
+    console.log("user object:", user);
+  } catch (parseError) {
+    console.error("Erreur parsing JSON:", parseError);
+    throw new Error('Erreur lors de la lecture des données utilisateur');
+  }
+
+  const userId = user?.id;
+  console.log("userId:", userId, "type:", typeof userId);
+  
+  if (!userId || userId === 'undefined') {
+    throw new Error('ID utilisateur non trouvé');
+  }
+
+  return { user, userId };
+};
 
 //function format
 function formatMontant(value) {
@@ -99,7 +147,6 @@ function formatMontant(value) {
     maximumFractionDigits: 2
   }).format(value);
 }
-
 
 // Fonction pour obtenir la couleur de la barre
 const getBarColor = (montant) => {
@@ -139,18 +186,40 @@ const loadChartJs = () => {
   })
 }
 
-// Fonction pour récupérer les données
+// Fonction pour récupérer les données du bilan de l'utilisateur connecté
 const fetchTotalProduits = async () => {
   try {
     isLoading.value = true
-    console.log('Récupération des données...')
+    authError.value = ''
+    console.log('Récupération des données du bilan...')
     
-    // Utiliser votre API réelle
-    const response = await fetch('http://localhost/backend/bilan_produits.php')
+    // Obtenir les données utilisateur
+    const { userId } = getUserData()
+    currentUserId.value = userId
+    
+    console.log('=== RECUPERATION BILAN UTILISATEUR ===')
+    console.log('Fetching bilan for user:', userId)
+    
+    // Appel API avec authentification utilisateur
+    const response = await fetch('http://localhost/backend/bilan_produits.php', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}`
+      }
+    })
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
+    
     const data = await response.json()
+    console.log('Bilan récupéré:', data)
+    
+    // Vérifier si la réponse contient une erreur
+    if (data.success === false) {
+      throw new Error(data.message || 'Erreur lors de la récupération du bilan')
+    }
     
     if (data && typeof data === 'object') {
       totalProduits.value = data.totalProduits || 0
@@ -159,16 +228,45 @@ const fetchTotalProduits = async () => {
       montantMinimal.value = data.montantMinimal || 0
       allProduits.value = data.produits || []
       
-      console.log('Produits récupérés:', allProduits.value)
+      console.log('Produits utilisateur récupérés:', allProduits.value.length)
     } else {
       console.error('Réponse API inattendue:', data)
       errorMessage.value = 'Réponse API invalide'
     }
   } catch (error) {
-    console.error('Erreur lors de la récupération des produits:', error)
-    errorMessage.value = error.message
+    console.error('Erreur lors de la récupération du bilan:', error)
+    
+    // Gestion des erreurs d'authentification
+    if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+      authError.value = error.message + ' Veuillez vous reconnecter.'
+      await Swal.fire({ 
+        icon: 'warning', 
+        title: 'Session expirée!', 
+        text: authError.value,
+        confirmButtonText: 'OK'
+      });
+    } else {
+      errorMessage.value = error.message
+      authError.value = 'Erreur lors du chargement des données: ' + error.message
+    }
+    
+    // Réinitialiser les données en cas d'erreur
+    totalProduits.value = 0
+    totalMontant.value = 0
+    montantMaximal.value = 0
+    montantMinimal.value = 0
+    allProduits.value = []
   } finally {
     isLoading.value = false
+  }
+}
+
+// Fonction pour réessayer le chargement
+const retryLoad = async () => {
+  await fetchTotalProduits()
+  if (chartJsAvailable.value && allProduits.value.length > 0 && !authError.value) {
+    await nextTick()
+    createChart()
   }
 }
 
@@ -347,24 +445,24 @@ const createChart = async () => {
 
 // Watcher pour recréer le graphique quand les données changent
 watch([allProduits, chartJsAvailable], async () => {
-  if (allProduits.value.length > 0 && chartJsAvailable.value && !isLoading.value) {
+  if (allProduits.value.length > 0 && chartJsAvailable.value && !isLoading.value && !authError.value) {
     await nextTick()
     createChart()
   }
 })
 
 onMounted(async () => {
-  console.log('Composant monté')
+  console.log('Composant bilan monté')
   try {
     await loadChartJs()
     await fetchTotalProduits()
     
-    if (chartJsAvailable.value && allProduits.value.length > 0) {
+    if (chartJsAvailable.value && allProduits.value.length > 0 && !authError.value) {
       await nextTick()
       createChart()
     }
   } catch (error) {
-    console.error('Erreur lors de l\'initialisation:', error)
+    console.error('Erreur lors de l\'initialisation du bilan:', error)
     errorMessage.value = error.message
   }
 })
@@ -427,7 +525,6 @@ h3 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   margin-top: 25px;
-  
 }
 
 .div1:hover, .div2:hover, .div3:hover, .div4:hover {
@@ -477,6 +574,21 @@ h3 {
 
 .error-message {
   color: #ff6b6b;
+}
+
+.retry-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.retry-btn:hover {
+  background-color: #0056b3;
 }
 
 .debug-info {

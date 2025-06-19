@@ -145,6 +145,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 
@@ -155,7 +156,7 @@ const itemsPerPage = ref(10);
 const searchQuery = ref('');
 const isLoading = ref(false);
 
-// NOUVEAU : États pour le formulaire d'ajout
+// États pour le formulaire d'ajout
 const showAddForm = ref(false);
 const nouveauProduit = ref({
   design: '',
@@ -163,18 +164,104 @@ const nouveauProduit = ref({
   quantite: null,
 });
 
-// Récupération initiale des produits
+// Fonction pour obtenir les données utilisateur
+const getUserData = () => {
+  console.log('=== VERIFICATION AUTHENTIFICATION ===');
+  
+  // Vérifier si l'utilisateur est connecté
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  console.log("isLoggedIn:", isLoggedIn);
+  
+  if (isLoggedIn !== 'true' && isLoggedIn !== 'True') {
+    throw new Error('Utilisateur non connecté');
+  }
+
+  // Récupérer les données utilisateur
+  const userString = localStorage.getItem('user');
+  console.log("user string:", userString);
+  
+  if (!userString || userString === 'undefined') {
+    throw new Error('Données utilisateur non trouvées');
+  }
+
+  let user;
+  try {
+    user = JSON.parse(userString);
+    console.log("user object:", user);
+  } catch (parseError) {
+    console.error("Erreur parsing JSON:", parseError);
+    throw new Error('Erreur lors de la lecture des données utilisateur');
+  }
+
+  const userId = user?.id;
+  console.log("userId:", userId, "type:", typeof userId);
+  
+  if (!userId || userId === 'undefined') {
+    throw new Error('ID utilisateur non trouvé');
+  }
+
+  return { user, userId };
+};
+
+// Récupération des produits de l'utilisateur connecté
 const fetchProduits = async () => {
   try {
     isLoading.value = true;
-    const response = await fetch('http://localhost/backend/lire_produits.php');
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+    // Obtenir les données utilisateur
+    const { userId } = getUserData();
+    
+    console.log('=== RECUPERATION PRODUITS ===');
+    console.log('Fetching products for user:', userId);
+    
+    const response = await fetch('http://localhost/backend/lire_produits.php', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
-    produits.value = data;
+    console.log('Produits récupérés:', data);
+    
+    // Vérifier si la réponse contient une erreur
+    if (data.success === false) {
+      throw new Error(data.message || 'Erreur lors de la récupération des produits');
+    }
+    
+    // Si data est un tableau, l'utiliser directement, sinon utiliser data.data
+    produits.value = Array.isArray(data) ? data : (data.data || []);
     currentPage.value = 1;
+    
+    console.log('Nombre de produits chargés:', produits.value.length);
+    
   } catch (error) {
     console.error('Erreur lors de la récupération:', error);
-    await Swal.fire({ icon: 'error', title: 'Erreur!', text: 'Erreur lors de la récupération des produits.' });
+    
+    // Afficher une erreur spécifique selon le type d'erreur
+    if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+      await Swal.fire({ 
+        icon: 'warning', 
+        title: 'Session expirée!', 
+        text: error.message + ' Veuillez vous reconnecter.',
+        confirmButtonText: 'OK'
+      });
+      // Optionnel: rediriger vers la page de connexion
+      // window.location.href = '/login';
+    } else {
+      await Swal.fire({ 
+        icon: 'error', 
+        title: 'Erreur!', 
+        text: 'Erreur lors de la récupération des produits: ' + error.message 
+      });
+    }
+    
+    produits.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -182,33 +269,81 @@ const fetchProduits = async () => {
 
 onMounted(fetchProduits);
 
-// --- Fonctions de Recherche et Rafraîchissement ---
+// Recherche de produits
 const rechercherProduits = async () => {
   try {
     isLoading.value = true;
+    
+    // Obtenir les données utilisateur
+    const { userId } = getUserData();
+    
     const termeCleaned = searchQuery.value.trim();
-    if (!termeCleaned) {
-      await fetchProduits();
-      return;
+    console.log('=== RECHERCHE PRODUITS ===');
+    console.log('Terme de recherche:', termeCleaned);
+    console.log('User ID:', userId);
+    
+    let url = 'http://localhost/backend/lire_produits.php';
+    if (termeCleaned) {
+      url += `?search=${encodeURIComponent(termeCleaned)}`;
     }
-    const url = `http://localhost/backend/lire_produits.php?search=${encodeURIComponent(termeCleaned)}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userId}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
-    produits.value = data;
-    if (data.length === 0) {
-      await Swal.fire({ icon: 'info', title: 'Aucun résultat', text: `Aucun produit trouvé pour "${termeCleaned}"` });
+    console.log('Résultats de recherche:', data);
+    
+    // Vérifier si la réponse contient une erreur
+    if (data.success === false) {
+      throw new Error(data.message || 'Erreur lors de la recherche');
     }
+    
+    // Si data est un tableau, l'utiliser directement, sinon utiliser data.data
+    const results = Array.isArray(data) ? data : (data.data || []);
+    produits.value = results;
+    
+    if (termeCleaned && results.length === 0) {
+      await Swal.fire({ 
+        icon: 'info', 
+        title: 'Aucun résultat', 
+        text: `Aucun produit trouvé pour "${termeCleaned}"` 
+      });
+    }
+    
     currentPage.value = 1;
+    console.log('Nombre de résultats:', results.length);
+    
   } catch (error) {
     console.error('Erreur lors de la recherche:', error);
-    await Swal.fire({ icon: 'error', title: 'Erreur!', text: 'Erreur lors de la recherche des produits.' });
+    
+    if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+      await Swal.fire({ 
+        icon: 'warning', 
+        title: 'Session expirée!', 
+        text: error.message + ' Veuillez vous reconnecter.' 
+      });
+    } else {
+      await Swal.fire({ 
+        icon: 'error', 
+        title: 'Erreur!', 
+        text: 'Erreur lors de la recherche: ' + error.message 
+      });
+    }
   } finally {
     isLoading.value = false;
   }
 };
 
-// --- Logique d'AJOUT de produit ---
+// Logique d'AJOUT de produit
 const afficherFormulaireAjout = () => {
   showAddForm.value = true;
 };
@@ -220,62 +355,10 @@ const annulerAjout = () => {
 
 const ajouterProduit = async () => {
   try {
-    // === AUTHENTIFICATION UTILISATEUR ===
-    console.log('=== VERIFICATION AUTHENTIFICATION ===');
-    
-    // Vérifier si l'utilisateur est connecté
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    console.log("isLoggedIn:", isLoggedIn);
-    
-    if (isLoggedIn !== 'true' && isLoggedIn !== 'True') {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Non connecté!',
-        text: 'Vous devez être connecté pour ajouter un produit.'
-      });
-      return;
-    }
+    // Obtenir les données utilisateur
+    const { userId } = getUserData();
 
-    // Récupérer les données utilisateur
-    const userString = localStorage.getItem('user');
-    console.log("user string:", userString);
-    
-    if (!userString || userString === 'undefined') {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Erreur!',
-        text: 'Données utilisateur non trouvées. Veuillez vous reconnecter.'
-      });
-      return;
-    }
-
-    let user;
-    try {
-      user = JSON.parse(userString);
-      console.log("user object:", user);
-    } catch (parseError) {
-      console.error("Erreur parsing JSON:", parseError);
-      await Swal.fire({
-        icon: 'error',
-        title: 'Erreur!',
-        text: 'Erreur lors de la lecture des données utilisateur.'
-      });
-      return;
-    }
-
-    const userId = user?.id;
-    console.log("userId:", userId, "type:", typeof userId);
-    
-    if (!userId || userId === 'undefined') {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Erreur!',
-        text: 'ID utilisateur non trouvé. Veuillez vous reconnecter.'
-      });
-      return;
-    }
-
-    // === PREPARATION DES DONNEES ===
+    // Préparer les données du produit
     const produitData = {
       design: nouveauProduit.value.design,
       prix: parseFloat(nouveauProduit.value.prix),
@@ -283,40 +366,31 @@ const ajouterProduit = async () => {
       user_id: parseInt(userId)
     };
 
-    console.log('=== DONNEES ENVOYEES ===');
+    console.log('=== AJOUT PRODUIT ===');
     console.log('produitData:', produitData);
 
-    // === ENVOI DE LA REQUETE ===
     const response = await fetch('http://localhost/backend/ajouter_produit.php', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userId}` // Ajouter l'en-tête d'authentification
+        'Authorization': `Bearer ${userId}`
       },
-      body: JSON.stringify(produitData), // Envoyer les données avec user_id
+      body: JSON.stringify(produitData),
     });
 
     const responseText = await response.text();
-    console.log('=== REPONSE BRUTE ===');
-    console.log('Response text:', responseText);
+    console.log('Réponse brute:', responseText);
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error('Erreur parsing response:', e);
-      await Swal.fire({
-        icon: 'error',
-        title: 'Erreur serveur!',
-        text: 'Réponse serveur invalide.'
-      });
-      return;
+      throw new Error('Réponse serveur invalide');
     }
 
-    console.log('=== REPONSE PARSEE ===');
-    console.log('data:', data);
+    console.log('Réponse parsée:', data);
 
-    // === TRAITEMENT DE LA REPONSE ===
     if (response.ok && data.success) {
       await Swal.fire({
         icon: 'success',
@@ -328,32 +402,30 @@ const ajouterProduit = async () => {
         position: 'top-end'
       });
       annulerAjout();
-      await fetchProduits();
+      await fetchProduits(); // Recharger les produits
     } else {
-      // Afficher les informations de debug en cas d'erreur
-      console.error('=== ERREUR SERVEUR ===');
-      console.error('Response status:', response.status);
-      console.error('Data:', data);
-      
+      throw new Error(data.message || "Erreur lors de l'ajout");
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'ajout:", error);
+    
+    if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+      await Swal.fire({ 
+        icon: 'warning', 
+        title: 'Session expirée!', 
+        text: error.message + ' Veuillez vous reconnecter.' 
+      });
+    } else {
       await Swal.fire({ 
         icon: 'error', 
         title: 'Erreur!', 
-        text: data.message || "Erreur lors de l'ajout.",
-        footer: data.debug ? `Debug: ${JSON.stringify(data.debug)}` : null
+        text: error.message 
       });
     }
-  } catch (error) {
-    console.error("=== ERREUR CATCH ===");
-    console.error("Erreur lors de l'ajout:", error);
-    await Swal.fire({ 
-      icon: 'error', 
-      title: 'Erreur de Connexion!', 
-      text: 'Impossible de se connecter au serveur.' 
-    });
   }
 };
 
-// --- Logique de MODIFICATION de produit ---
+// Logique de MODIFICATION de produit
 const modifierProduit = (produit) => {
   produitAModifier.value = { ...produit };
 };
@@ -365,9 +437,15 @@ const annulerModification = () => {
 const enregistrerModification = async () => {
   if (produitAModifier.value) {
     try {
+      // Obtenir les données utilisateur pour s'assurer que l'utilisateur est connecté
+      const { userId } = getUserData();
+      
       const response = await fetch('http://localhost/backend/modifier_produit.php', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userId}`
+        },
         body: JSON.stringify(produitAModifier.value),
       });
       const data = await response.json();
@@ -378,20 +456,42 @@ const enregistrerModification = async () => {
           produits.value[index] = { ...produitAModifier.value, montant };
         }
         produitAModifier.value = null;
-        await Swal.fire({ icon: 'success', title: 'Succès!', text: data.message || 'Produit modifié', timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
+        await Swal.fire({ 
+          icon: 'success', 
+          title: 'Succès!', 
+          text: data.message || 'Produit modifié', 
+          timer: 2000, 
+          showConfirmButton: false, 
+          toast: true, 
+          position: 'top-end' 
+        });
       } else {
-        await Swal.fire({ icon: 'error', title: 'Erreur!', text: data.message || 'Erreur modification' });
+        throw new Error(data.message || 'Erreur modification');
       }
     } catch (error) {
       console.error('Erreur lors de la modification:', error);
-      await Swal.fire({ icon: 'error', title: 'Erreur!', text: 'Erreur lors de la modification du produit.' });
+      
+      if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+        await Swal.fire({ 
+          icon: 'warning', 
+          title: 'Session expirée!', 
+          text: error.message + ' Veuillez vous reconnecter.' 
+        });
+      } else {
+        await Swal.fire({ 
+          icon: 'error', 
+          title: 'Erreur!', 
+          text: error.message 
+        });
+      }
     }
   }
 };
 
-// --- Logique de SUPPRESSION de produit ---
+// Logique de SUPPRESSION de produit
 const supprimerProduit = async (id) => {
   if (id === undefined) return;
+  
   const produit = produits.value.find(p => p.numproduit === id);
   const result = await Swal.fire({
     title: 'Êtes-vous sûr?',
@@ -406,22 +506,49 @@ const supprimerProduit = async (id) => {
 
   if (result.isConfirmed) {
     try {
-      const response = await fetch(`http://localhost/backend/supprimer_produit.php?id=${id}`, { method: 'DELETE' });
+      // Obtenir les données utilisateur
+      const { userId } = getUserData();
+      
+      const response = await fetch(`http://localhost/backend/supprimer_produit.php?id=${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${userId}`
+        }
+      });
       const data = await response.json();
       if (response.ok) {
-        await Swal.fire({ icon: 'success', title: 'Supprimé!', text: data.message || 'Produit supprimé.', timer: 2000, showConfirmButton: false });
-        await fetchProduits();
+        await Swal.fire({ 
+          icon: 'success', 
+          title: 'Supprimé!', 
+          text: data.message || 'Produit supprimé.', 
+          timer: 2000, 
+          showConfirmButton: false 
+        });
+        await fetchProduits(); // Recharger les produits
       } else {
-        await Swal.fire({ icon: 'error', title: 'Erreur!', text: data.message || 'Erreur suppression.' });
+        throw new Error(data.message || 'Erreur suppression');
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      await Swal.fire({ icon: 'error', title: 'Erreur!', text: 'Erreur lors de la suppression du produit.' });
+      
+      if (error.message.includes('connecté') || error.message.includes('utilisateur')) {
+        await Swal.fire({ 
+          icon: 'warning', 
+          title: 'Session expirée!', 
+          text: error.message + ' Veuillez vous reconnecter.' 
+        });
+      } else {
+        await Swal.fire({ 
+          icon: 'error', 
+          title: 'Erreur!', 
+          text: error.message 
+        });
+      }
     }
   }
 };
 
-// --- Propriétés COMPUTED et Méthodes de PAGINATION ---
+// Propriétés COMPUTED et Méthodes de PAGINATION
 const paginatedProduits = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + Number(itemsPerPage.value);
